@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - %(message)s')
 web - set to True for default use together with React
     - set to False to run in Python console for debug purposes
 """
-web = True
+web = False
 
 accuracy = 1
 profile_end_tolerance = 50
@@ -55,7 +55,7 @@ def upload_file():
         global current_dir
 
         # Construct the relative path to the 'node_input' directory
-        node_input_dir = os.path.join(current_dir, 'Aile_Element_Classification', 'node_input')
+        node_input_dir = os.path.join(current_dir, 'node_input')
 
         # Create the 'node_input' directory if it doesn't exist
         if not os.path.exists(node_input_dir):
@@ -95,7 +95,7 @@ def process_files(filename):
     global current_dir
 
     # Input
-    opening_report = os.path.join(current_dir,'Aile_Element_Classification', 'Tests', 'OpeningData.csv')
+    opening_report = os.path.join(current_dir, 'node_input', 'OpeningData.csv')
 
     #profile_report = os.path.join(current_dir, 'Aile_Element_Classification', 'node_input', filename)
     profile_report = os.path.join(current_dir, 'node_input', filename)
@@ -142,7 +142,7 @@ def process_files(filename):
 @app.route('/api/download/<filename>', methods=['GET'])
 def download_file(filename):
     global current_dir
-    output_folder = os.path.join(current_dir, 'Aile_Element_Classification', 'Output')
+    output_folder = os.path.join(current_dir, 'Output')
     return send_from_directory(output_folder, 'output_grouping.csv')
 
 if __name__ == '__main__':
