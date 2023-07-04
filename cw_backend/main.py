@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - %(message)s')
 web - set to True for default use together with React
     - set to False to run in Python console for debug purposes
 """
-web = False
+web = True
 
 accuracy = 1
 profile_end_tolerance = 50
@@ -44,6 +44,9 @@ def ignore_favicon_request():
 @app.route('/getResults')
 def get_results():
     return jsonify(results)
+
+
+
 
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
