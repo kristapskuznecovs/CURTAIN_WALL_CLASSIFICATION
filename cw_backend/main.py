@@ -117,6 +117,12 @@ def process_files(filename):
 
     print('Generating openings, writing')
     print('Working...')
+
+    # Call the function to delete the files
+    Write_Json.delete_files_in_folder(json_folder)
+
+
+
     for element in elements:
         # try:
         for plane in element.element_planes:

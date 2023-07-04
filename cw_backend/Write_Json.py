@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 import main
 
@@ -9,8 +10,23 @@ accuracy = main.accuracy
 logging.basicConfig(level=logging.WARNING, format='%(levelname)s - %(message)s')
 
 
+def delete_files_in_folder(folder_path):
+    i = 0
+    # Iterate over all the files in the folder
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+
+        # Check if the path is a file (not a directory)
+        if os.path.isfile(file_path):
+            # Delete the file
+            os.remove(file_path)
+            i += 1
+    print(f"Deleted {i} files")
+
+
 def write_json(element, json_folder):
-    # create a Python dictionary with some data
+
+
 
     guid = element.guid
     height = round(element.element_planes[0].height, accuracy)
