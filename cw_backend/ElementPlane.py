@@ -42,10 +42,10 @@ class ElementPlane:
         profiles = self.all_profiles[:]
         opening = Opening.Opening(self.height, self.width, Geometry.Point(0, 0, 0), self.all_profiles, self.plane, level=0)
         self.opening = opening
-        opening.top = Profile.find_vertical_profile(self.height, profiles)
-        opening.bottom = Profile.find_vertical_profile(0, profiles)
-        opening.left = Profile.find_horizontal_profile(0, profiles)
-        opening.right = Profile.find_horizontal_profile(self.width, profiles)
+        opening.top = Profile.find_H_profile_at_y_pos(self.height, profiles)
+        opening.bottom = Profile.find_H_profile_at_y_pos(0, profiles)
+        opening.left = Profile.find_V_profile_at_x_pos(0, profiles)
+        opening.right = Profile.find_V_profile_at_x_pos(self.width, profiles)
 
         if opening.top is not None:
             profiles.remove(opening.top)
@@ -59,8 +59,6 @@ class ElementPlane:
         opening.profiles_inside = profiles
         level = 1
         Opening.recursion_split_openings(opening, profiles, level)
-
-
 
 
 def generate_plane_from_bottom_beam(bottom_beam, all_profiles):
@@ -109,7 +107,7 @@ def find_most_vertical_profile(all_profiles):
 
         dif_x = end.x - start.x
         dif_y = end.y - start.y
-        dif_z = end.z - start.z
+        dif_z = abs(end.z - start.z)
 
         horizontal = math.sqrt(dif_x ** 2 + dif_y ** 2)
         if horizontal < 1:

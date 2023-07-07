@@ -27,6 +27,7 @@ def get_point_cloud_array(opening_report):
                 break
         point_cloud_array.append(current_list)
     point_cloud_array.append([])
+    point_cloud_array.append([])
 
     print('Working...')
 

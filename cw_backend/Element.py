@@ -12,6 +12,7 @@ class Element:
         self.profiles = []
         self.element_planes = []
         self.plane_count = 0
+        self.delivery_number = ''
 
     def __str__(self):
         return f'{self.guid} | {len(self.profiles)}'
@@ -39,5 +40,9 @@ class Element:
                 profile.direction = profile.get_direction_local()
                 profile.orient_points()
 
+
         self.plane_count = len(self.element_planes)
 
+
+def assign_delivery_number(element):
+    element.delivery_number = element.profiles[0].delivery_number

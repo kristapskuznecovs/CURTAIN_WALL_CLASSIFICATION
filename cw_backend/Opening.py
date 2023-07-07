@@ -25,18 +25,15 @@ class Opening:
         self.type = ''
 
         self.children = []
+        self.split_direction = ''
         self.profiles_all = profiles
         self.level = level
 
-        logging.debug(f'Plane {plane}')
-
         self.plane = plane
-
         self.local_opening_plane = copy.deepcopy(plane)
 
         self.adjust_plane_origin()
 
-        logging.debug(f'Plane {plane}')
 
     def __str__(self):
         return f'Level: {self.level}\n' \
@@ -137,6 +134,7 @@ def recursion_split_openings(father: Opening, inside_profiles, level, debug=Fals
                 print(profile)
 
         if crossing_profiles[0].direction == 'V':
+            father.split_direction = 'V'
             sorted_profiles = sorted(crossing_profiles, key=lambda p: p.middle_point.x)
 
             top = father.top
@@ -247,6 +245,7 @@ def recursion_split_openings(father: Opening, inside_profiles, level, debug=Fals
                     recursion_split_openings(new_opening, local_inside_profiles, level + 1)
 
         if crossing_profiles[0].direction == 'H':
+            father.split_direction = 'H'
             sorted_profiles = sorted(crossing_profiles, key=lambda p: p.middle_point.y)
 
             if debug:
@@ -378,7 +377,10 @@ def assign_opening_type(opening, plane, point_cloud_array):
 
         index = int(round(Geometry.distance_to_zero(opening_center_global) / 1000, 0))
         # print(index)
-        point_cloud = point_cloud_array[index - 1] + point_cloud_array[index] + point_cloud_array[index + 1]
+        try:
+            point_cloud = point_cloud_array[index - 1] + point_cloud_array[index] + point_cloud_array[index + 1]
+        except:
+            print('Problem')
 
         if len(point_cloud) == 0:
             opening.type = None
@@ -395,7 +397,7 @@ def assign_opening_type(opening, plane, point_cloud_array):
             if Geometry.distance_2pt(closest_point, opening_center_global) < 400:
                 opening.type = closest_point.name
             else:
-                opening.type = None
+                opening.type = "-"
 
     for opening_child in opening.children:
         assign_opening_type(opening_child, plane, point_cloud_array)

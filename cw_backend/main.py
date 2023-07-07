@@ -15,7 +15,6 @@ import AnalyzeJsons
 # Set up logging configuration
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - %(message)s')
 
-
 """
 web - set to True for default use together with React
     - set to False to run in Python console for debug purposes
@@ -33,19 +32,20 @@ results = {}  # Store the results
 
 current_dir = os.getcwd()
 
+
 @app.route('/')
 def custom_index():
     return "Custom message goes here"
+
 
 @app.route('/favicon.ico')
 def ignore_favicon_request():
     return '', 204  # Return an empty response with a 204 status code (No Content)
 
+
 @app.route('/getResults')
 def get_results():
     return jsonify(results)
-
-
 
 
 @app.route('/api/upload', methods=['POST'])
@@ -94,13 +94,14 @@ def upload_file():
     # Return the response as JSON
     return jsonify(response)
 
+
 def process_files(filename):
     global current_dir
 
     # Input
-    opening_report = os.path.join(current_dir, 'node_input', 'OpeningData.csv')
+    opening_report = os.path.join(current_dir, 'node_input', 'GeelyOpeningData.csv')
 
-    #profile_report = os.path.join(current_dir, 'Aile_Element_Classification', 'node_input', filename)
+    # profile_report = os.path.join(current_dir, 'Aile_Element_Classification', 'node_input', filename)
     profile_report = os.path.join(current_dir, 'node_input', filename)
 
     # Output
@@ -109,7 +110,7 @@ def process_files(filename):
     write_jsons = True
     draw_element = False
     analyze_json = True
-    assign_opening_type = False
+    assign_opening_type = True
 
     # Group profiles by GUID's into distinct element objects
     elements = ReadCSV.read_csv(profile_report)
@@ -123,8 +124,6 @@ def process_files(filename):
 
     # Call the function to delete the files
     Write_Json.delete_files_in_folder(json_folder)
-
-
 
     for element in elements:
         # try:
@@ -148,16 +147,28 @@ def process_files(filename):
     logging.debug(f'Result: {result}')
     return result
 
+
 @app.route('/api/download/<filename>', methods=['GET'])
 def download_file(filename):
     global current_dir
     output_folder = os.path.join(current_dir, 'Output')
     return send_from_directory(output_folder, 'output_grouping.csv')
 
+
+@app.route('/api/download/filelist', methods=['GET'])
+def get_file_names():
+    output_folder = 'Output'
+    filename_list = []
+    for filename in os.listdir(output_folder):
+        if os.path.isfile(os.path.join(output_folder, filename)):
+            filename_list.append(filename)
+    return filename_list
+
+
 if __name__ == '__main__':
     if web:
         app.run()
     else:
-        result = process_files("SimpleELement_TestData.csv")
+        result = process_files("Geely_46.csv")
         print('Finished')
         # print(result)

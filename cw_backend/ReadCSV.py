@@ -48,6 +48,7 @@ def read_csv(file_path):
             end_x = float(row[indexes["end_x_index"]].replace(" ", ""))
             end_y = float(row[indexes["end_y_index"]].replace(" ", ""))
             end_z = float(row[indexes["end_z_index"]].replace(" ", ""))
+            delivery_number = row[indexes["delivery_number"]]
 
             if assembly_guid not in previous_element_guid:
                 previous_element_guid.add(assembly_guid)
@@ -60,7 +61,8 @@ def read_csv(file_path):
                 if element.guid == assembly_guid:
                     profile = Profile.Profile(profile, length, guid,
                                               start_x, start_y, start_z,
-                                              end_x, end_y, end_z)
+                                              end_x, end_y, end_z,
+                                              delivery_number)
                     profile.start, profile.end = profile.end, profile.start
                     element.profiles.append(profile)
 
@@ -72,12 +74,17 @@ def read_csv(file_path):
             print(element.guid)
         print()
 
+
+
     # After creation of element objects, profiles are split into element planes (necessary for corner elements)
 
     print(f'Read {len(elements)} elements from file')
     print('Working...')
     i = 0
     for element in elements:
+
+        Element.assign_delivery_number(element)
+
         i += 1
         # print(i, element.guid)
         element.generate_planes()

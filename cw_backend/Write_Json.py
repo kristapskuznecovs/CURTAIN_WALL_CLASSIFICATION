@@ -31,6 +31,7 @@ def write_json(element, json_folder):
     guid = element.guid
     height = round(element.element_planes[0].height, accuracy)
     width = 0
+    delivery_number = element.delivery_number
     for plane in element.element_planes:
         width += plane.width
     width = round(width, accuracy)
@@ -57,6 +58,8 @@ def write_json(element, json_folder):
             opening_dict["LEFT"] = {"PROFILE": opening.left.profile, "GUID": opening.left.guid}
         if opening.right is not None:
             opening_dict["RIGHT"] = {"PROFILE": opening.right.profile, "GUID": opening.right.guid}
+
+        opening_dict["SPLIT DIRECTION"] = opening.split_direction
 
         opening_dict["CHILDREN"] = []
 
@@ -96,10 +99,17 @@ def write_json(element, json_folder):
         if opening.right is not None:
             opening_dict["RIGHT"] = {"PROFILE": opening.right.profile, "GUID": opening.right.guid}
 
+        opening_dict["SPLIT DIRECTION"] = opening.split_direction
+
         opening_dict["CHILDREN"] = []
+
+        if len(opening.children) == 0:
+            opening_dict["TYPE"] = opening.type
 
         for child_opening in opening.children:
             opening_dict["CHILDREN"].append(get_children_data(child_opening))
+
+
 
         plane_dict["OPENING"] = opening_dict
 
@@ -110,7 +120,8 @@ def write_json(element, json_folder):
         "HEIGHT": height,
         "WIDTH": width,
         "PLANE COUNT": plane_count,
-        "PLANES": planes
+        "PLANES": planes,
+        "DELIVERY_NUMBER": delivery_number
     }
 
     # serialize the data to JSON format
