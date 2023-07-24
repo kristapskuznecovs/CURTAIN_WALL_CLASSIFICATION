@@ -3,6 +3,7 @@ import Element
 import Profile
 import logging
 import Verification
+import Settings
 
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - %(message)s')
 
@@ -19,6 +20,7 @@ indexes = {"profile_index": 0,
            "delivery_number": 10
            }
 
+left_to_right_direction = Settings.settings["left_to_right_direction"]
 
 def read_csv(file_path):
     # Method will go over each row of csv file.
@@ -63,7 +65,10 @@ def read_csv(file_path):
                                               start_x, start_y, start_z,
                                               end_x, end_y, end_z,
                                               delivery_number)
-                    profile.start, profile.end = profile.end, profile.start
+
+                    if not left_to_right_direction:
+                        profile.start, profile.end = profile.end, profile.start
+
                     element.profiles.append(profile)
 
     elements, bad_elements = Verification.valid_or_invalid_elements(elements)

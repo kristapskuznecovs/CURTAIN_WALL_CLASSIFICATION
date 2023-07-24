@@ -26,7 +26,7 @@ class Profile:
                 self.start, self.end = self.end, self.start
 
     def __str__(self):
-        return f'|{self.direction:>4} | {self.start} | {self.end} | {self.guid} {self.middle_point}'
+        return f'|{self.direction:>4} | {self.start} | {self.end} | {self.guid} {self.length}'
 
     def get_direction(self):
         """
@@ -95,6 +95,9 @@ def sort_bottom_profiles(bottom_profiles):
     if len(bottom_profiles) > 1:
         first = bottom_profiles[0]
         second = bottom_profiles[1]
+
+        first_end = first.end
+        second_start = second.start
 
         distance1 = Geometry.distance_2pt(first.end, second.start)
         distance2 = Geometry.distance_2pt(second.end, first.start)

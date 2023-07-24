@@ -2,9 +2,7 @@ import json
 import logging
 import os
 
-import main
-
-accuracy = main.accuracy
+accuracy = 2
 
 # Set up logging configuration
 logging.basicConfig(level=logging.WARNING, format='%(levelname)s - %(message)s')

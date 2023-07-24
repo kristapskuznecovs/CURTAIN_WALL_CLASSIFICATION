@@ -16,7 +16,6 @@ def get_type_count(option1_list):
     """
     unique_entries = set()
 
-
     i = 1
     objects = {}
 
@@ -38,7 +37,6 @@ def get_type_count(option1_list):
             objects[description]["size_count"][size] = 0
         objects[description]["size_count"][size] += 1
 
-
     descriptions = objects.keys()
     for description in descriptions:
         sizes = objects[description]["size_list"]
@@ -47,9 +45,8 @@ def get_type_count(option1_list):
 
         for size in sizes:
             size_dict[size] = i
-            i+=1
+            i += 1
         objects[description]["size_list"] = size_dict
-
 
     return objects
 
@@ -91,39 +88,6 @@ def get_opening_string_option1(opening):
     return result
 
 
-def get_opening_string(opening):
-    result = ''
-    if len(opening['CHILDREN']) == 0:
-        try:
-            result += ' TOP ' + opening['TOP']['PROFILE']
-        except KeyError:
-            pass
-
-        try:
-            result += ' BOTTOM ' + opening['BOTTOM']['PROFILE']
-        except KeyError:
-            pass
-
-        try:
-            result += ' LEFT ' + opening['LEFT']['PROFILE']
-        except KeyError:
-            pass
-
-        try:
-            result += ' RIGHT ' + opening['RIGHT']['PROFILE']
-        except KeyError:
-            pass
-
-        result += '-' + str(opening["HEIGHT"])
-        result += '-' + str(opening["WIDTH"])
-
-        return ' OPENING: ' + result
-    else:
-        for child in opening['CHILDREN']:
-            result += get_opening_string(child)
-        return result
-
-
 def get_opening_size_data(opening):
     result = ''
     if len(opening['CHILDREN']) == 0:
@@ -136,6 +100,31 @@ def get_opening_size_data(opening):
         for child in opening['CHILDREN']:
             result += get_opening_size_data(child)
         return result
+
+
+def generate_output_openings(output_folder, json_folder):
+    path = json_folder
+    file_names = get_file_names(path)
+
+    with open(output_folder + '\output_openings.csv', 'w', newline='') as file:
+
+        writer = csv.writer(file, delimiter=';')
+        writer.writerow(['TYPE', 'TOP', 'BOTTOM', 'LEFT', 'RIGHT', 'ORIGIN', 'X_VECTOR', 'Y_VECTOR', 'HEIGHT', 'WIDTH'])
+
+        for i in range(len(file_names)):
+            file_name = file_names[i]
+            file_path = os.path.join(path, file_name)
+
+            with open(file_path) as f:
+                data = json.load(f)
+            i = 0
+            for plane in data['PLANES']:
+                i += 1
+                opening = plane['OPENING']
+                row_array = []
+                get_opening_row_array(opening, row_array)
+                for row in row_array:
+                    writer.writerow(row)
 
 
 def get_opening_row_array(opening, result):
@@ -188,61 +177,78 @@ def get_opening_row_array(opening, result):
             get_opening_row_array(child, result)
 
 
-def analyze_jsons(output_folder, json_folder):
-    path = json_folder
+def get_type_usage(opening, type_count):
+    if len(opening["CHILDREN"]) == 0:
+        type = opening["TYPE"]
+        if type not in type_count:
+            type_count[type] = 1
+        else:
+            type_count[type] += 1
+    else:
+        for child in opening["CHILDREN"]:
+            get_type_usage(child, type_count)
 
-    file_names = get_file_names(path)
 
-    output_grouping_option1 = []
 
-    # Open the CSV file in write mode
-    with open(output_folder + '\output_openings.csv', 'w', newline='') as file:
-        # Create a CSV writer object
-        writer = csv.writer(file, delimiter=';')
-        writer.writerow(['TYPE', 'TOP', 'BOTTOM', 'LEFT', 'RIGHT', 'ORIGIN', 'X_VECTOR', 'Y_VECTOR', 'HEIGHT', 'WIDTH'])
+def get_option_descriptions(json_folder):
+    file_names = get_file_names(json_folder)
+    option_descriptions = []
 
-        for i in range(len(file_names)):
+    for i in range(len(file_names)):
 
-            file_name = file_names[i]
+        file_name = file_names[i]
 
-            file_path = os.path.join(path, file_name)
+        file_path = os.path.join(json_folder, file_name)
 
-            with open(file_path) as f:
-                data = json.load(f)
-            guid = data['GUID']
+        opening_type_count = {}
 
-            delivery_number = data["DELIVERY_NUMBER"]
+        with open(file_path) as f:
+            data = json.load(f)
+        guid = data['GUID']
 
-            string_option2 = f"{data['HEIGHT']} x {data['WIDTH']}"
+        delivery_number = data["DELIVERY_NUMBER"]
 
-            string = ''
-            opening_data = ''
-            string_option1 = ''
-            i = 0
-            for plane in data['PLANES']:
-                i += 1
-                string_option1 += f'P{i} '
-                opening = plane['OPENING']
-                string += ' PLANE' + get_opening_string(opening)
-                opening_data += get_opening_size_data(opening)
-                row_array = []
-                get_opening_row_array(opening, row_array)
-                for row in row_array:
-                    writer.writerow(row)
-                try:
-                    string_option1 += get_opening_string_option1(opening)
-                except:
-                    print(f'There are problems with generating string option1 for {guid}')
-            output_grouping_option1.append({"name": file_name, "option1": string_option1, "option2": string_option2, "delivery_number": delivery_number})
+        opening_type_count = {}
 
-    types = get_type_count(output_grouping_option1)
+        string_option2 = f"{data['HEIGHT']} x {data['WIDTH']}"
 
+        string_option1 = ''
+        i = 0
+        for plane in data['PLANES']:
+            i += 1
+            string_option1 += f'P{i} '
+            opening = plane['OPENING']
+
+            get_type_usage(opening, opening_type_count)
+
+            try:
+                string_option1 += get_opening_string_option1(opening)
+            except:
+                print(f'There are problems with generating string option1 for {guid}')
+
+        type_count_string = ''
+        keys = opening_type_count.keys()
+        for key in keys:
+            if key == '':
+                type_count_string += f'{opening_type_count[key]}{"-"} '
+            else:
+                type_count_string += f'{opening_type_count[key]}{key} '
+
+
+        string_option1 = f'{type_count_string}{string_option1}'
+
+        option_descriptions.append({"name": file_name, "option1": string_option1, "option2": string_option2,
+                                    "delivery_number": delivery_number})
+
+    return option_descriptions
+
+
+def generate_output_grouping(option_descriptions, types, output_folder):
     with open(output_folder + '\output_grouping.csv', 'w', newline='', encoding='UTF8') as file:
-
         writer = csv.writer(file, delimiter=';')
 
         writer.writerow(["NAME", "Option 1", "Option 1 description", "Option 2", "Option 2 Description"])
-        for item in output_grouping_option1:
+        for item in option_descriptions:
             name = item["delivery_number"]
             description = item["option1"]
             type = f'Group {types[description]["key"]}'
@@ -255,6 +261,8 @@ def analyze_jsons(output_folder, json_folder):
             row = [name, type, description, size_group, size_description]
             writer.writerow(row)
 
+
+def generate_output_group_statistics(output_folder, types):
     with open(output_folder + '\group_statistics.csv', 'w', newline='', encoding='UTF8') as file:
         writer = csv.writer(file, delimiter=';')
 
@@ -271,12 +279,20 @@ def analyze_jsons(output_folder, json_folder):
             for size in sizes:
                 size_count.append(object["size_count"][size])
 
-
-
-
             writer.writerow(size_count)
 
 
+def analyze_jsons(output_folder, json_folder):
+    # Generate output openings csv report, information used for Engineers
+    generate_output_openings(output_folder, json_folder)
 
+    option_descriptions = get_option_descriptions(json_folder)
+
+    types = get_type_count(option_descriptions)
+
+    # Generate output element grouping - information for factory
+    generate_output_grouping(option_descriptions, types, output_folder)
+
+    generate_output_group_statistics(output_folder, types)
 
     return types

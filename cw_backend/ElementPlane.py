@@ -40,7 +40,8 @@ class ElementPlane:
 
     def generate_openings(self):
         profiles = self.all_profiles[:]
-        opening = Opening.Opening(self.height, self.width, Geometry.Point(0, 0, 0), self.all_profiles, self.plane, level=0)
+        opening = Opening.Opening(self.height, self.width, Geometry.Point(0, 0, 0), self.all_profiles, self.plane,
+                                  level=0)
         self.opening = opening
         opening.top = Profile.find_H_profile_at_y_pos(self.height, profiles)
         opening.bottom = Profile.find_H_profile_at_y_pos(0, profiles)
@@ -94,13 +95,12 @@ def generate_plane_from_bottom_beam(bottom_beam, all_profiles):
     v_y1 = v_end.y
     v_z1 = v_end.z
 
-    y_vector = Geometry.Vector(v_x1-v_x0, v_y1-v_y0, v_z1-v_z0)
+    y_vector = Geometry.Vector(v_x1 - v_x0, v_y1 - v_y0, v_z1 - v_z0)
 
     return Geometry.Plane(origin, x_vector, y_vector)
 
 
 def find_most_vertical_profile(all_profiles):
-
     def get_ratio(profile):
         start = profile.start
         end = profile.end
@@ -131,12 +131,9 @@ def find_most_vertical_profile(all_profiles):
 
 def sort_profiles_by_planes(bottom_profiles, all_profiles):
     result = []
-
     for _ in bottom_profiles:
         result.append([])
-
     for profile in all_profiles:
-
         if len(bottom_profiles) == 1:
             result[0].append(profile)
             continue
