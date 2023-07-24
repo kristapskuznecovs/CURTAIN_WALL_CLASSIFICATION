@@ -4,7 +4,9 @@ import traceback
 from flask import send_from_directory
 import os
 import logging
+
 import ProcessFile
+import Settings
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS support
@@ -112,3 +114,13 @@ def run_process_file(filename):
         traceback.print_exc()
 
     return response
+
+
+@app.route('/api/settings/<settings>', methods=['POST'])
+def set_settings(settings):
+    try:
+        Settings.settings = settings
+        return True
+    except Exception as e:
+        traceback.print_exc()
+        return False

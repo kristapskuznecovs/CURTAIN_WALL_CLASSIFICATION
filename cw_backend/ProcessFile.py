@@ -5,9 +5,12 @@ import Write_Json
 import Opening
 import DrawElement
 import AnalyzeJsons
+import Settings
 
 results = {}  # Store the results
 current_dir = os.getcwd()
+
+settings = Settings.settings
 
 def process_files(filename):
     global current_dir
@@ -19,12 +22,12 @@ def process_files(filename):
     profile_report = os.path.join(current_dir, 'node_input', filename)
 
     # Output
-    json_folder = 'Results'
-    output_folder = 'Output'
-    write_jsons = True
-    draw_element = False
-    analyze_json = True
-    assign_opening_type = False
+    json_folder = settings["json_folder"]
+    output_folder = settings["output_folder"]
+    write_jsons = settings["write_jsons"]
+    draw_element = settings["draw_element"]
+    analyze_json = settings["analyze_json"]
+    assign_opening_type = settings["assign_opening_type"]
 
     # Group profiles by GUID's into distinct element objects
     elements = ReadCSV.read_csv(profile_report)

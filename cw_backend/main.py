@@ -11,5 +11,5 @@ if __name__ == '__main__':
     if web:
         FlaskApp.app.run()
     else:
-        result = ProcessFile.process_files("Geely_46.csv")
+        result = ProcessFile.process_files("Geely2.csv")
         print('Finished')
