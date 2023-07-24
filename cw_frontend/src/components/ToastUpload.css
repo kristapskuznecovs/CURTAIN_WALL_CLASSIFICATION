@@ -1,0 +1,64 @@
+.toast {
+    position: fixed;
+    bottom: -100%;
+    bottom: 0px;
+    right: 50px;
+    width: 400px;
+    background-color: #f8f9fa;
+    color: #000;
+    border-radius: 4px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    animation: slideIn 0.8s forwards;
+  }
+
+  @keyframes slideIn {
+    0% {
+      bottom: -100%;
+    }
+    100% {
+      bottom: 0px;
+    }
+  }
+  
+  .toast-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color:#000;
+  }
+  
+  
+  .toast-title {
+    margin-right: 10px;
+  }
+  
+  .toast-body {
+    font-size: 14px;
+  }
+
+  .spinner-border.toast-spinner {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-width: 0.2em;
+    color: red;
+  }
+  
+  .spinner-grow.toast-spinner {
+    width: 1.5rem;
+    height: 1.5rem;
+    animation: spinnerBlink 2.5s infinite; /* Adjust the duration as needed */
+  }
+  
+  @keyframes spinnerBlink {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }

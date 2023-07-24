@@ -1,0 +1,6 @@
+.page-container {
+    margin: 0 auto;
+    margin-left: min(200px, 10%);
+    margin-right: min(200px, 10%);
+  }
+  

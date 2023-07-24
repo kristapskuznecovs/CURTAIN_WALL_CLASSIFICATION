@@ -1,0 +1,16 @@
+.alert {
+    /* Styles for the initial position */
+    position: fixed;
+    bottom: -80px; /* Initially positioned outside the screen */
+    left: 20px;
+  
+    /* Other styles */
+    border-radius: 50px; /* Add this line to set the border radius */
+    cursor: pointer;
+    transition: bottom 0.3s ease-in-out; /* Adding a transition effect */
+  }
+  
+  .alert.show {
+    /* Styles for the visible/alert state */
+    bottom: 20px; /* Position the alert on the screen */
+  }

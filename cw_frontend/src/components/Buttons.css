@@ -1,0 +1,47 @@
+.button {
+    width: 150px;
+    background-color: #808080;
+    color: #ffffff; /* Text color */
+    border: 1px solid;
+    border-radius: 50px; /* Add this line to set the border radius */
+    padding: 10px 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.button:hover {
+  background-color: #FF9A1B;
+  border-color: #FF9A1B;
+  color: #000000;
+}
+
+.button:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.button-sm {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100px;
+  height: 40px;
+  background-color: #808080;
+  color: #ffffff; /* Text color */
+  border: 1px solid;
+  border-radius: 50px; /* Add this line to set the border radius */
+  padding: 10px 10px;
+  cursor: pointer;
+}
+
+.button-sm:hover {
+background-color: #FF9A1B;
+border-color: #FF9A1B;
+color: #000000;
+}
+
+.button-sm:focus {
+outline: none;
+box-shadow: none;
+}
+

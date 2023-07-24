@@ -1,0 +1,32 @@
+.progress-bar {
+    width: 100%;
+    height: 25px;
+    background-color: lightgray;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .progress-bar-fill {
+    height: 100%;
+    background-color: grey;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: width 0.3s ease-in-out;
+  }
+  
+  .progress-bar.completed .progress-bar-fill {
+    background-color: green;
+  }
+  
+  .upload-status-bar {
+    margin-top: 20px;
+  }
+  
+  .upload-completed-label {
+    display: block;
+    color: green;
+    margin-top: 5px;
+  }
+  
