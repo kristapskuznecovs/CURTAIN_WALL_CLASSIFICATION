@@ -2,5 +2,10 @@
     margin: 0 auto;
     margin-left: min(200px, 10%);
     margin-right: min(200px, 10%);
+    min-width: 250px;
+  }
+
+  .app-container {
+    min-width: 400px;
   }
   
