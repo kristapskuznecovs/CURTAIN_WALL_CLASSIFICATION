@@ -3,3 +3,5 @@ cw_frontend/node_modules/
 
 # Ignore Python 
 cw_backend/__pycache__/
+
+# Ignore Python
