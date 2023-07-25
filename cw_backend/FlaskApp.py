@@ -66,7 +66,6 @@ def upload_file():
 
 @app.route('/api/download/<filename>', methods=['GET'])
 def download_file(filename):
-    global current_dir
     output_folder = os.path.join('Output')
     return send_from_directory(output_folder, 'output_grouping.csv')
 
