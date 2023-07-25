@@ -44,7 +44,7 @@ const DropZone = ({ handleUploadProgress, setUploadedFileName, showAlert, handle
       newFiles.forEach(file => {
         handleFileUploadSuccess(file.name);
       });
-      
+
       await uploadFile(formData);
 
     } catch (error) {
@@ -75,11 +75,11 @@ const DropZone = ({ handleUploadProgress, setUploadedFileName, showAlert, handle
         showAlert('success', 'Fails augšupielādēts veiksmīgi!');
       } else {
         // Handle the case of unsuccessful file upload (show error message)
-        showAlert('danger', 'Augšupielādējot failu, ir notikusi kļūda!');
+        showAlert('danger', 'Augšupielādējot failu, ir notikusi kļūda! Lūdzu, mēģiniet vēlreiz?????');
       }
     } catch (error) {
       // Handle any errors that occurred during the API call (show error message)
-      showAlert('danger', 'Augšupielādējot failu, ir notikusi kļūda!');
+      showAlert('danger', 'Augšupielādējot failu, ir notikusi kļūda! Lūdzu, mēģiniet vēlreiz.');
       console.error('An error occurred while uploading the file.', error);
     }
   };
