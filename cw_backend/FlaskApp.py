@@ -56,19 +56,22 @@ def upload_file():
         response = {
             'message': 'File uploaded and saved successfully',
             'filename': file.filename,
-            'download_path': f'/api/download/{file.filename}'
         }
 
+        # Return the response with a 200 status code (OK)
+        return jsonify(response), 200
+
     except Exception as e:
+        # Prepare the response message for upload failure
         response = {
             'message': 'File upload failed',
-            'error': str(e)
+            'filename': file.filename,
         }
         logging.exception('Error during file upload:')
         traceback.print_exc()
 
-    # Return the response as JSON
-    return jsonify(response)
+    # Return the response with a 500 status code (Internal Server Error)
+        return jsonify(response), 500
 
 
 @app.route('/api/download/<folder>/<filename>', methods=['GET'])
