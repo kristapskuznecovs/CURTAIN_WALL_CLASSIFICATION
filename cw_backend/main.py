@@ -7,7 +7,7 @@ import os
 web - set to True for default use together with React
     - set to False to run in Python console for debug purposes
 """
-web = False
+web = True
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
