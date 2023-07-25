@@ -71,11 +71,12 @@ const DropZone = ({ handleUploadProgress, setUploadedFileName, showAlert, handle
       // Check the response status to determine if the upload was successful
       if (response.status === 200) {
         // Handle the case of successful file upload
-        handleFileUploadSuccess(response.data.fileName);
-        showAlert('success', 'Fails augšupielādēts veiksmīgi!');
+        handleFileUploadSuccess(response.data.filename);
+        showAlert('success', response.data.message);
+      } else if (response.status === 500) {
+        // Handle the case of unsuccessful file upload (show error message) Currently it is not working and debuging must be carried out to have 500 error.
+        showAlert('danger', response.data.message);
       } else {
-        // Handle the case of unsuccessful file upload (show error message)
-        showAlert('danger', 'Augšupielādējot failu, ir notikusi kļūda! Lūdzu, mēģiniet vēlreiz?????');
       }
     } catch (error) {
       // Handle any errors that occurred during the API call (show error message)
