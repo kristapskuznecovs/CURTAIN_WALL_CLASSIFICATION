@@ -56,24 +56,24 @@ class Profile:
         return Geometry.Point(middle_x, middle_y, middle_z)
 
 
-def find_H_profile_at_y_pos(y_pos, all_profiles):
+def find_h_profile_at_y_pos(y_pos, all_profiles, tolerance=50):
     """
     Method is used for finding profiles at the top and bottom of opening
     """
     for profile in all_profiles:
         if profile.direction == 'H':
-            if abs(profile.middle_point.y - y_pos) < 1:
+            if abs(profile.middle_point.y - y_pos) < tolerance:
                 return profile
     return None
 
 
-def find_V_profile_at_x_pos(x_pos, all_profiles):
+def find_v_profile_at_x_pos(x_pos, all_profiles, tolerance=50):
     """
     Method is used for finding profiles at the left and right side of opening
     """
     for profile in all_profiles:
         if profile.direction == 'V':
-            if abs(profile.middle_point.x - x_pos) < 1:
+            if abs(profile.middle_point.x - x_pos) < tolerance:
                 return profile
     return None
 
@@ -95,9 +95,6 @@ def sort_bottom_profiles(bottom_profiles):
     if len(bottom_profiles) > 1:
         first = bottom_profiles[0]
         second = bottom_profiles[1]
-
-        first_end = first.end
-        second_start = second.start
 
         distance1 = Geometry.distance_2pt(first.end, second.start)
         distance2 = Geometry.distance_2pt(second.end, first.start)

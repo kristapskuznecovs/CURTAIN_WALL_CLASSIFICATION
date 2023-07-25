@@ -3,7 +3,9 @@ import math
 import Opening
 import Profile
 import Geometry
+import Settings
 
+tolerance = Settings.settings["profile_end_tolerance"]
 
 class ElementPlane:
     def __init__(self, bottom_beam, all_profiles):
@@ -43,10 +45,10 @@ class ElementPlane:
         opening = Opening.Opening(self.height, self.width, Geometry.Point(0, 0, 0), self.all_profiles, self.plane,
                                   level=0)
         self.opening = opening
-        opening.top = Profile.find_H_profile_at_y_pos(self.height, profiles)
-        opening.bottom = Profile.find_H_profile_at_y_pos(0, profiles)
-        opening.left = Profile.find_V_profile_at_x_pos(0, profiles)
-        opening.right = Profile.find_V_profile_at_x_pos(self.width, profiles)
+        opening.top = Profile.find_H_profile_at_y_pos(self.height, profiles, tolerance)
+        opening.bottom = Profile.find_H_profile_at_y_pos(0, profiles, tolerance)
+        opening.left = Profile.find_V_profile_at_x_pos(0, profiles, tolerance)
+        opening.right = Profile.find_V_profile_at_x_pos(self.width, profiles, tolerance)
 
         if opening.top is not None:
             profiles.remove(opening.top)

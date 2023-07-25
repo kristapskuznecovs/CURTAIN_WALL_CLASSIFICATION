@@ -1,89 +1,156 @@
-import cv2
-import numpy as np
+import Element
+import Write_Json
+
+import drawsvg as draw
 
 
-def draw_element(element, debug=False):
-    # Create a blank image with size 5000x3000 and 3 channels (RGB)
+def add_profile_to_drawing(drawing, profile, level, element_height, x_offset, perimeter_profile=True, border=10, scale=20,
+                           profile_shortening=100):
+    start = profile.start
+    end = profile.end
 
-    width = 0
-    height = 0
+    if profile.direction == 'V':
+        horizontal_shortening = 0
+        vertical_shortening = int(profile_shortening / scale)
+    elif profile.direction == 'H':
+        horizontal_shortening = int(profile_shortening / scale)
+        vertical_shortening = 0
+    else:
+        horizontal_shortening = 0
+        vertical_shortening = 0
 
-    width_arr = [0]
+    x1 = int(start.x / scale) + border + horizontal_shortening + x_offset
+    y1 = element_height - int(start.y / scale) + border + level * (element_height + 2 * border) - vertical_shortening
 
-    for plane in element.element_planes:
+    x2 = int(end.x / scale) + border - horizontal_shortening + x_offset
+    y2 = element_height - int(end.y / scale) + border + level * (element_height + 2 * border) + vertical_shortening
 
-        if debug:
-            print(f'{len(plane.all_profiles)} profiles in plane')
+    if perimeter_profile:
+        stroke = 'black'
+    else:
+        stroke = 'red'
 
-        width += int(plane.width)
-        width_arr.append(int(plane.width))
-        height = int(plane.height)
+    drawing.append(draw.Lines(x1, y1, x2, y2,
+                              close=False,
+                              fill='none',
+                              stroke=stroke))
 
-    height += 500
-    width += 500
 
-    img = np.ones((height, width, 3), dtype=np.uint8) * 255
+def add_opening_to_drawing(drawing, opening, level, element_height, x_offset, border=10, scale=20, opening_shortening=50):
+    shortening = int(opening_shortening / scale)
 
-    i = 0
+    origin = opening.origin
 
-    colour_ar = [[255, 0, 0],
-                 [0, 0, 255],
-                 [0, 255, 0],
-                 [255, 255, 0],
-                 [0, 255, 255],
-                 [100, 100, 100]]
+    vertical_offset = (element_height + 2 * border) * (level + 1)
 
-    def add_openings_as_rectangle(opening, img, hor_offset, color, level, global_height, global_width):
-        # print(level)
-        # print(opening)
-        this_colour = color[level]
-        r, g, b = this_colour[0], this_colour[1], this_colour[2]
-        origin = opening.origin
-        height = int(global_height)
-        width = int(global_width)
-        tolerance = 50
-        # print(f'Drawing origing: {origin}')
-        x1 = int(origin.x + 250 + hor_offset + tolerance)
-        y1 = int(-origin.y + 250 + height - tolerance)
-        x2 = int(x1 + opening.width - 2 * tolerance)
-        y2 = int(y1 - opening.height + 2 * tolerance)
-        cv2.rectangle(img, (x1, y1), (x2, y2), (b, g, r), -1)
+    local_x = int(origin.x / scale)
+    local_y = int(origin.y / scale)
 
-        if len(opening.children) == 0:
-            cv2.circle(img, (opening.center.x + 250 + hor_offset, -opening.center.y + 250 + height), 50, (0, 0, 0), 10)
+    local_height = int(opening.height / scale)
+    local_width = int(opening.width / scale)
 
-        for child_opening in opening.children:
-            add_openings_as_rectangle(child_opening, img, hor_offset, color, level + 1, global_height, global_width)
+    height = local_height - 2 * shortening
+    width = local_width - 2 * shortening
 
-    for plane in element.element_planes:
+    x1 = local_x + border + shortening + x_offset
+    y1 = - local_y - border + shortening + vertical_offset - local_height
 
-        depth = 0
+    drawing.append(draw.Rectangle(x1, y1, width, height, fill='blue', fill_opacity=0.3))
 
-        temp_colour = colour_ar[i]
 
-        r, g, b = temp_colour[0], temp_colour[1], temp_colour[2]
+def add_level_title(drawing, level, element_height, element_width, border, scale, text_size):
+    x = element_width / 2 + border
+    y = border / 2 + (element_height + 2 * border) * level
+    drawing.append(draw.Text(f'Level {level}', text_size, x, y, fill='Black', center=True))
 
-        add_openings_as_rectangle(plane.opening, img, width_arr[i], colour_ar, depth, plane.height, plane.width)
 
-        for profile in plane.all_profiles:
-            x1 = int(profile.start.x + 250 + width_arr[i])
-            y1 = int(-profile.start.y + height - 250)
-            x2 = int(profile.end.x + 250 + width_arr[i])
-            y2 = int(-profile.end.y + height - 250)
+def add_opening_to_openings(opening, openings):
+    # Recursion function for method split_openings_in_opening_lists
+    level = opening.level
+    openings[level].append(opening)
+    for child in opening.children:
+        add_opening_to_openings(child, openings)
 
-            cv2.line(img, (x1, y1), (x2, y2), (b, g, r), 20)
 
-        i += 1
+def split_openings_in_opening_lists(element, all_openings):
+    # Change data structure from tree to list of lists
+    for i in range(len(element.element_planes)):
+        plane = element.element_planes[i]
+        opening = plane.opening
+        plane_openings = all_openings[i]
+        add_opening_to_openings(opening, plane_openings)
 
-    # Scale down the image to a particular height in pixels (e.g. 500 pixels)
-    height = 500
-    scale = height / img.shape[0]
-    width = int(img.shape[1] * scale)
-    dim = (width, height)
-    img_resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
-    # Display the original image and the resized image
-    # cv2.imshow('Original Image', img)
-    cv2.imshow('Resized Image', img_resized)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+def draw_element(element):
+    """
+    Generate SVG file for debugging purposes
+    :param element:
+    :return:
+    """
+    border = 10  # Border between images in svg file
+    scale = 20
+
+    element_dimensions = Element.get_element_dimensions(element)
+
+    max_level = Element.get_element_max_level(element) + 1  # Depth level for opening recursion splitting
+
+    # Element data
+    height = element_dimensions["HEIGHT"]
+    width = element_dimensions["WIDTH"]
+    element_height = int(height / scale)
+    element_width = int(width / scale)
+
+    # Drawing data
+    d_height = element_height + 2 * border
+    d_width = element_width + 2 * border
+
+    # Create canvas, only objects within canvas borders will be shown
+    d = draw.Drawing(d_width, d_height * max_level, origin=(0, 0))
+
+    # To make organization easier, openings and their children are changed to different data structure
+    openings = []
+    for _ in range(len(element.element_planes)):
+        plane_openings = [[] for _ in range(max_level)]
+        openings.append(plane_openings)
+
+    split_openings_in_opening_lists(element, openings)
+    x_offsets = [0]
+    for i in range(len(element.element_planes)-1):
+        x_offsets.append(int(element.element_planes[i].width / scale))
+
+    for i in range(len(element.element_planes)):
+        plane_openings = openings[i]
+        x_offset = x_offsets[i]
+
+        # Generate image for each recursion level
+        for level in range(max_level):
+            openings_in_level = plane_openings[level]
+
+            # Used to control so that each profile is being drawn only once
+            perimeter_profiles_added = set()
+
+            # Create label above each level image
+            add_level_title(d, level, element_height, element_width, border, scale, text_size=8)
+
+            for opening in openings_in_level:
+
+                # Add inside red profiles
+                for profile in opening.profiles_inside:
+                    perimeter_profile = False
+                    add_profile_to_drawing(d, profile, level, element_height, x_offset, perimeter_profile, border, scale)
+
+                # Add perimeter black profiles
+                perimeter_profiles = [x for x in [opening.top, opening.right, opening.bottom, opening.left]
+                                      if x is not None]
+                for profile in perimeter_profiles:
+                    perimeter_profile = True
+                    if profile.guid not in perimeter_profiles_added:
+                        perimeter_profiles_added.add(profile.guid)
+                        add_profile_to_drawing(d, profile, level, element_height, x_offset, perimeter_profile, border, scale)
+
+                # Add opaque opening rectangle
+                add_opening_to_drawing(d, opening, level, element_height, x_offset, border, scale, 150)
+
+    d.set_pixel_scale(2)  # Set number of pixels per geometry unit
+
+    d.save_svg(f'SvgOutput/{element.delivery_number}.svg')

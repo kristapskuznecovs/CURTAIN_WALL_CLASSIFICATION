@@ -6,7 +6,7 @@ settings = {
     "json_folder": 'Results',
     "output_folder": 'Output',
     "write_jsons": True,
-    "draw_element": False,
+    "draw_element": True,
     "analyze_json": True,
     "assign_opening_type": False
 }

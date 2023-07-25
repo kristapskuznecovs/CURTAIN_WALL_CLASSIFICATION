@@ -46,3 +46,36 @@ class Element:
 
 def assign_delivery_number(element):
     element.delivery_number = element.profiles[0].delivery_number
+
+
+def get_element_dimensions(element):
+    height = 0
+    width = 0
+
+    for plane in element.element_planes:
+        height = plane.height
+        width += plane.width
+
+    return {"HEIGHT": height, "WIDTH": width}
+
+
+def get_opening_level(opening, level):
+    if len(opening.children) == 0:
+        return opening.level
+    else:
+        child_levels = [level]
+        for child in opening.children:
+            child_levels.append(get_opening_level(child, level))
+        return max(child_levels)
+
+
+def get_element_max_level(element):
+    level = 0
+
+    for plane in element.element_planes:
+        opening = plane.opening
+        level = get_opening_level(opening, level)
+
+    return level
+
+

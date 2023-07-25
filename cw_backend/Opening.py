@@ -87,26 +87,29 @@ def get_crossing_profiles(inside_profiles, father: Opening):
     width = father.width
     height = father.height
 
-    inside_profiles_copy = inside_profiles[:]
     crossing_profiles = []
+    other_profiles = []
 
-    for profile in inside_profiles_copy:
+    for profile in inside_profiles:
         if profile.direction == 'H':
             if (abs(profile.start.x - father.origin.x) < tolerance and abs(
                     profile.end.x - father.origin.x - width) < tolerance) or (
                     abs(profile.end.x - father.origin.x) < tolerance and abs(
                     profile.start.x - father.origin.x - width) < tolerance):
                 crossing_profiles.append(profile)
-                inside_profiles.remove(profile)
+            else:
+                other_profiles.append(profile)
+
         if profile.direction == 'V':
             if (abs(profile.start.y - father.origin.y) < tolerance and abs(
                     profile.end.y - father.origin.y - height) < tolerance) or (
                     abs(profile.end.y - father.origin.y) < tolerance and abs(
                     profile.start.y - father.origin.y - height) < tolerance):
                 crossing_profiles.append(profile)
-                inside_profiles.remove(profile)
+            else:
+                other_profiles.append(profile)
 
-    return crossing_profiles
+    return crossing_profiles, other_profiles
 
 
 def recursion_split_openings(father: Opening, inside_profiles, level):
@@ -118,7 +121,7 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
     height = father.height
 
     # Get a list which profiles are fully crossing the father opening - splitting the father and creating new openings
-    crossing_profiles = get_crossing_profiles(inside_profiles, father)
+    crossing_profiles, non_crossing_profiles = get_crossing_profiles(inside_profiles, father)
 
     if len(crossing_profiles) > 0:
 
@@ -141,7 +144,7 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
 
                 # If opening has all 4 perimeter profiles, more precise geometry information can be created
                 if None not in all_profiles:
-                    for profile in inside_profiles:
+                    for profile in non_crossing_profiles:
                         if left.middle_point.x < profile.middle_point.x < right.middle_point.x:
                             all_profiles.append(profile)
                             local_inside_profiles.append(profile)
@@ -164,7 +167,7 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
 
                     # if Any perimeter profile is missing (opening has only 3 edge profiles, e.g. corner elements)
                     # Imprecise geometry information is created based on start/end handles instead of middle points.
-                    for profile in inside_profiles:
+                    for profile in non_crossing_profiles:
                         x1 = father.origin.x
                         x2 = father.origin.x + width
                         if x1 < profile.middle_point.x < x2:
@@ -246,7 +249,7 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
 
                 if None not in all_profiles:
 
-                    for profile in inside_profiles:
+                    for profile in non_crossing_profiles:
 
                         if bottom.middle_point.y < profile.middle_point.y < top.middle_point.y:
                             all_profiles.append(profile)
@@ -267,7 +270,7 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
                         continue
                     recursion_split_openings(new_opening, local_inside_profiles, level + 1)
                 else:
-                    for profile in inside_profiles:
+                    for profile in non_crossing_profiles:
                         y1 = father.origin.y
                         y2 = father.origin.y + height
                         if y1 < profile.middle_point.x < y2:

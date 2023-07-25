@@ -12,6 +12,7 @@ current_dir = os.getcwd()
 
 settings = Settings.settings
 
+
 def process_files(filename):
     global current_dir
 
@@ -41,6 +42,7 @@ def process_files(filename):
 
     # Call the function to delete the files
     Write_Json.delete_files_in_folder(json_folder)
+    Write_Json.delete_files_in_folder("SvgOutput")
 
     for element in elements:
         # try:
