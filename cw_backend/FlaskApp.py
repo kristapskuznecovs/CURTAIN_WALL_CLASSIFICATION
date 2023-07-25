@@ -13,6 +13,13 @@ CORS(app)  # Enable CORS support
 
 results = ProcessFile.results  # Store the results
 
+current_dir = ''
+
+
+def set_current_directory(current_directory):
+    global current_dir
+    current_dir = current_directory
+
 
 @app.route('/')
 def custom_index():
@@ -36,7 +43,7 @@ def upload_file():
         file = request.files['file']
 
         # Construct the relative path to the 'node_input' directory
-        node_input_dir = os.path.join('node_input')
+        node_input_dir = os.path.join(current_dir, 'node_input')
 
         # Create the 'node_input' directory if it doesn't exist
         if not os.path.exists(node_input_dir):
@@ -64,15 +71,16 @@ def upload_file():
     return jsonify(response)
 
 
-@app.route('/api/download/<filename>', methods=['GET'])
-def download_file(filename):
-    output_folder = os.path.join('Output')
-    return send_from_directory(output_folder, 'output_grouping.csv')
+@app.route('/api/download/<folder>/<filename>', methods=['GET'])
+def download_file(folder, filename):
+    output_folder = os.path.join(current_dir, folder)
+    return send_from_directory(output_folder, filename)
 
 
 @app.route('/api/download/filelist', methods=['GET'])
 def get_file_names():
-    output_folder = 'Output'
+    output_folder = os.path.join(current_dir, 'Output')
+
     filename_list = []
     for filename in os.listdir(output_folder):
         if os.path.isfile(os.path.join(output_folder, filename)):
@@ -82,7 +90,7 @@ def get_file_names():
 
 @app.route('/api/delete/<folder>/<filename>', methods=['DELETE'])
 def delete_file(folder, filename):
-    path = os.path.join(folder, filename)
+    path = os.path.join(current_dir, folder, filename)
     if os.path.isfile(path):
         try:
             os.remove(path)
