@@ -9,7 +9,7 @@ web - set to True for default use together with React
 """
 web = True
 
-current_dir = os.getcwd()
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 if __name__ == '__main__':
     if web:
