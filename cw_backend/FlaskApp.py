@@ -35,11 +35,8 @@ def upload_file():
         # Access the uploaded file
         file = request.files['file']
 
-        # Get the current directory path
-        global current_dir
-
         # Construct the relative path to the 'node_input' directory
-        node_input_dir = os.path.join(current_dir, 'node_input')
+        node_input_dir = os.path.join('node_input')
 
         # Create the 'node_input' directory if it doesn't exist
         if not os.path.exists(node_input_dir):
@@ -70,7 +67,7 @@ def upload_file():
 @app.route('/api/download/<filename>', methods=['GET'])
 def download_file(filename):
     global current_dir
-    output_folder = os.path.join(current_dir, 'Output')
+    output_folder = os.path.join('Output')
     return send_from_directory(output_folder, 'output_grouping.csv')
 
 
