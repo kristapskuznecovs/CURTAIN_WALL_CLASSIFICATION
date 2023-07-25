@@ -38,15 +38,15 @@ const DropZone = ({ handleUploadProgress, setUploadedFileName, showAlert, handle
         formData.append('file', file); // Append each file to the FormData
       });
       console.log('FormData:', formData);
-  
-      handleUploadProgress(100);
 
       setFileUploaded(true);
       setUploadedFiles(prevUploadedFiles => [...prevUploadedFiles, ...newFiles]);
       newFiles.forEach(file => {
         handleFileUploadSuccess(file.name);
       });
-  
+      
+      await uploadFile(formData);
+
     } catch (error) {
       console.error('An error occurred while uploading the file.', error);
       showAlert('danger', 'Augšupielādējot failu, ir notikusi kļūda!');
@@ -60,16 +60,30 @@ const DropZone = ({ handleUploadProgress, setUploadedFileName, showAlert, handle
 
 
   const uploadFile = async (formData) => {
-    await axios.post('http://127.0.0.1:5000/api/upload', formData, {
-      onUploadProgress: (progressEvent) => {
-        const progress = Math.round(
-          (progressEvent.loaded / progressEvent.total) * 100
-        );
-        handleUploadProgress(progress);
-      },
-    });
-  }; 
-
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/api/upload', formData, {
+        onUploadProgress: (progressEvent) => {
+          const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+          handleUploadProgress(progress);
+        },
+      });
+  
+      // Check the response status to determine if the upload was successful
+      if (response.status === 200) {
+        // Handle the case of successful file upload
+        handleFileUploadSuccess(response.data.fileName);
+        showAlert('success', 'Fails augšupielādēts veiksmīgi!');
+      } else {
+        // Handle the case of unsuccessful file upload (show error message)
+        showAlert('danger', 'Augšupielādējot failu, ir notikusi kļūda!');
+      }
+    } catch (error) {
+      // Handle any errors that occurred during the API call (show error message)
+      showAlert('danger', 'Augšupielādējot failu, ir notikusi kļūda!');
+      console.error('An error occurred while uploading the file.', error);
+    }
+  };
+  
  
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
