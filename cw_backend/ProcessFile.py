@@ -6,6 +6,7 @@ import Opening
 import DrawElement
 import AnalyzeJsons
 import Settings
+import AnalyzeElementDifferences
 
 results = {}  # Store the results
 
@@ -30,11 +31,23 @@ def process_files(filename):
     profile_report = os.path.join(current_dir, 'node_input', filename)
 
     # Output
-    json_folder = settings["json_folder"]
-    output_folder = settings["output_folder"]
+    json_folder = os.path.join(current_dir, settings["json_folder"])
+
+
+    output_folder = os.path.join(current_dir, settings["output_folder"])
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+
+    svg_folder = os.path.join(current_dir, settings["svg_folder"])
     write_jsons = settings["write_jsons"]
     draw_element = settings["draw_element"]
     analyze_json = settings["analyze_json"]
+
+    difference_folder = os.path.join(current_dir, settings["difference_results"])
+    if not os.path.exists(difference_folder):
+        os.makedirs(difference_folder)
+
     assign_opening_type = settings["assign_opening_type"]
 
     # Group profiles by GUID's into distinct element objects
@@ -48,8 +61,15 @@ def process_files(filename):
     print('Working...')
 
     # Call the function to delete the files
+    if not os.path.exists(json_folder):
+        os.makedirs(json_folder)
+
     Write_Json.delete_files_in_folder(json_folder)
-    Write_Json.delete_files_in_folder("SvgOutput")
+
+    if not os.path.exists(svg_folder):
+        os.makedirs(svg_folder)
+
+    Write_Json.delete_files_in_folder(svg_folder)
 
     for element in elements:
         # try:
@@ -59,7 +79,7 @@ def process_files(filename):
             if assign_opening_type:
                 Opening.assign_opening_type(plane.opening, plane.plane, point_cloud_array)
         if draw_element:
-            DrawElement.draw_element(element)
+            DrawElement.draw_element(element, svg_folder)
         if write_jsons:
             Write_Json.write_json(element, json_folder)
         # except:
@@ -69,5 +89,11 @@ def process_files(filename):
         print('Analyzing JSONs')
         print('Working')
         result = AnalyzeJsons.analyze_jsons(output_folder, json_folder)
+
+        if settings["analyze_differences"]:
+            AnalyzeElementDifferences.generate_report_of_similar_but_different_openings(json_folder,
+                                                                                        output_folder,
+                                                                                        difference_folder)
+
         results[filename] = result  # Store the result using the filename as the key
     return result

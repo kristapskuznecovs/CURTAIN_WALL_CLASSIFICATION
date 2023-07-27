@@ -242,7 +242,7 @@ def get_count_of_elements_to_adjust(data_tree_object, adjust_elements):
     return True
 
 
-def generate_report_of_similar_but_different_openings(json_folder, output_folder):
+def generate_report_of_similar_but_different_openings(json_folder, output_folder, difference_folder):
     file_names = AnalyzeJsons.get_file_names(json_folder)
 
     data_tree = []
@@ -280,7 +280,7 @@ def generate_report_of_similar_but_different_openings(json_folder, output_folder
         if not data_tree_object_min_max_check(tree_object):
             bad_tree_objects.append(tree_object)
 
-    Write_Json.delete_files_in_folder("DifferenceAnalysis")
+    Write_Json.delete_files_in_folder(difference_folder)
 
     i = 1
 
@@ -297,7 +297,7 @@ def generate_report_of_similar_but_different_openings(json_folder, output_folder
 
         json_data = json.dumps(tree_object, indent=4)
 
-        file_path = "DifferenceAnalysis" + '/' + str(i) + '.json'
+        file_path = f"{difference_folder}" + '/' + str(i) + '.json'
 
         with open(file_path, "w") as file:
             file.write(json_data)
@@ -305,4 +305,4 @@ def generate_report_of_similar_but_different_openings(json_folder, output_folder
         i += 1
 
 
-generate_report_of_similar_but_different_openings('Results', 'Output')
+# generate_report_of_similar_but_different_openings('Results', 'Output')

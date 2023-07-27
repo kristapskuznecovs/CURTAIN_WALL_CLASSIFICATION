@@ -3,6 +3,8 @@ import Write_Json
 
 import drawsvg as draw
 
+import Settings
+
 
 def add_profile_to_drawing(drawing, profile, level, element_height, x_offset, perimeter_profile=True, border=10, scale=20,
                            profile_shortening=100):
@@ -81,7 +83,7 @@ def split_openings_in_opening_lists(element, all_openings):
         add_opening_to_openings(opening, plane_openings)
 
 
-def draw_element(element):
+def draw_element(element, svg_folder):
     """
     Generate SVG file for debugging purposes
     :param element:
@@ -127,7 +129,7 @@ def draw_element(element):
             openings_in_level = plane_openings[level]
 
             # Used to control so that each profile is being drawn only once
-            perimeter_profiles_added = set()
+            profiles_added = set()
 
             # Create label above each level image
             add_level_title(d, level, element_height, element_width, border, scale, text_size=8)
@@ -136,6 +138,10 @@ def draw_element(element):
 
                 # Add inside red profiles
                 for profile in opening.profiles_inside:
+                    if profile.guid in profiles_added:
+                        print(f'When drawing svg file {profile.guid} is as inside profile in multiple openings. It '
+                              f'should not happen')
+                    profiles_added.add(profile.guid)
                     perimeter_profile = False
                     add_profile_to_drawing(d, profile, level, element_height, x_offset, perimeter_profile, border, scale)
 
@@ -144,8 +150,8 @@ def draw_element(element):
                                       if x is not None]
                 for profile in perimeter_profiles:
                     perimeter_profile = True
-                    if profile.guid not in perimeter_profiles_added:
-                        perimeter_profiles_added.add(profile.guid)
+                    if profile.guid not in profiles_added:
+                        profiles_added.add(profile.guid)
                         add_profile_to_drawing(d, profile, level, element_height, x_offset, perimeter_profile, border, scale)
 
                 # Add opaque opening rectangle
@@ -153,4 +159,4 @@ def draw_element(element):
 
     d.set_pixel_scale(2)  # Set number of pixels per geometry unit
 
-    d.save_svg(f'SvgOutput/{element.delivery_number}.svg')
+    d.save_svg(f'{svg_folder}/{element.delivery_number}.svg')
