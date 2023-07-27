@@ -1,120 +1,97 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useDropzone } from 'react-dropzone';
-import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './DropZone.css';
-import './Buttons.css';
+import './Buttons.css'
 
-const DropZone = ({ handleUploadProgress, setUploadedFileName, showAlert, handleFileUploadSuccess }) => {
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+const DropZone = ({ handleUploadProgress, setUploadedFileName, showAlert, handleFileUploadSuccess, selectedFiles, setSelectedFiles, setShowToast }) => {
+
   const [fileUploaded, setFileUploaded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
 
-  const handleFileUpload = useCallback(async (acceptedFiles) => {
-    try {
-      if (acceptedFiles.length === 0) {
-        // No files were dropped, handle the situation accordingly
-        return;
-      }
-      console.log('Accepted Files:', acceptedFiles);
 
-      const newFiles = acceptedFiles.filter(file => {
-        const fileExtension = file.name.split('.').pop().toLowerCase();
-        return fileExtension === 'csv'; // Only allow CSV files
-      });
+  // Dzēšamais gabals
+  // const handleFileRemove = (fileName) => {
+  //   setSelectedFiles(prevSelectedFiles => prevSelectedFiles.filter(file => file.name !== fileName));
+  // };
+
+
+  const handleFileSelection = useCallback((acceptedFiles) => {
+    const newFiles = acceptedFiles.filter(file => {
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+      return fileExtension === 'csv'; // Only allow CSV files
+    });
   
-      if (newFiles.length === 0) {
-        // Handle the case when no valid files are dropped
-        showAlert('warning', 'Augšupielādēt var tikai .csv failus!');
-        return;
-      }
-  
-      setUploading(true);
-
-      const formData = new FormData();
-      newFiles.forEach(file => {
-        formData.append('file', file); // Append each file to the FormData
-      });
-      console.log('FormData:', formData);
-
-      setFileUploaded(true);
-      setUploadedFiles(prevUploadedFiles => [...prevUploadedFiles, ...newFiles]);
-      newFiles.forEach(file => {
-        handleFileUploadSuccess(file.name);
-      });
-
-      await uploadFile(formData);
-
-    } catch (error) {
-      console.error('An error occurred while uploading the file.', error);
-      showAlert('danger', 'Augšupielādējot failu, ir notikusi kļūda!');
-      handleUploadProgress(0);
-      setFileUploaded(false);
-
-    } finally {
-      setUploading(false);
+    if (newFiles.length < acceptedFiles.length) {
+      // Some files were rejected because they are not CSV files
+      const invalidFiles = acceptedFiles.filter(file => !newFiles.includes(file));
+      showAlert('warning', `Tas nav CSV fails: ${invalidFiles.map(file => `"${file.name}"`).join(', ')}`);
     }
-  }, [handleUploadProgress, showAlert, handleFileUploadSuccess]);
-
-
-  const uploadFile = async (formData) => {
-    try {
-      const response = await axios.post('http://127.0.0.1:5000/api/upload', formData, {
-        onUploadProgress: (progressEvent) => {
-          const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-          handleUploadProgress(progress);
-        },
-      });
   
-      // Check the response status to determine if the upload was successful
-      if (response.status === 200) {
-        // Handle the case of successful file upload
-        handleFileUploadSuccess(response.data.filename);
-        showAlert('success', response.data.message);
-      } else if (response.status === 500) {
-        // Handle the case of unsuccessful file upload (show error message) Currently it is not working and debuging must be carried out to have 500 error.
-        showAlert('danger', response.data.message);
-      } else {
-      }
-    } catch (error) {
-      // Handle any errors that occurred during the API call (show error message)
-      showAlert('danger', 'Augšupielādējot failu, ir notikusi kļūda! Lūdzu, mēģiniet vēlreiz.');
-      console.error('An error occurred while uploading the file.', error);
+    const uniqueFiles = newFiles.filter(file => !selectedFiles.some(selectedFile => selectedFile.name === file.name));
+    const duplicateFiles = newFiles.filter(file => selectedFiles.some(selectedFile => selectedFile.name === file.name));
+  
+    // console.log('Accepted Files:', acceptedFiles);
+    // console.log('Unique Files:', uniqueFiles);
+    // console.log('Duplicate Files:', duplicateFiles);
+  
+    if (duplicateFiles.length > 0) {
+      showAlert('warning', `Dublikātus nepieņemam: ${duplicateFiles.map(file => `"${file.name}"`).join(', ')}`);
     }
-  };
+  
+    if (uniqueFiles.length > 0) {
+      setSelectedFiles(prevSelectedFiles => [...prevSelectedFiles, ...uniqueFiles]);
+      setShowToast(true); // Show the toast when valid files are dropped
+    }
+  
+    // console.log('Selected Files in DropZone:', selectedFiles);
+  }, [selectedFiles, showAlert, setSelectedFiles, setShowToast]);
   
  
+  const fileInputRef = useRef(null);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: handleFileUpload,
-    disabled: fileUploaded || uploadedFiles.length >= 3,
-    multiple: true, // Allow multiple files to be dropped
-    maxFiles: 3, // Limit the maximum number of files to 3
+  const handleSelectButtonClick = () => {
+    // console.log('Button clicked!');
+    fileInputRef.current.click();
+  };
+
+  const { acceptedFiles, getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: handleFileSelection,
+    multiple: true,
   });
 
   return (
-    <div
-      {...getRootProps()}
-      className={`dropzone ${isDragActive ? 'active' : ''} ${fileUploaded ? 'uploaded' : ''}`}
-    >
+    <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''} ${fileUploaded ? 'uploaded' : ''}`}>
       <input {...getInputProps({ accept: '.csv' })} />
       {isDragActive ? (
-        <p className="mb-0">Pievienojiet fails šeit...</p>
+        <p className="">Pievienojiet failus šeit...</p>
       ) : (
-        <div className="d-flex flex-column align-items-center justify-content-center">
+        <div className="">
           {fileUploaded ? (
-            <i className="bi bi-check-circle-fill"></i>
+            <>
+              <i className=""></i>
+            </>
           ) : (
-            <i className="bi bi-cloud-arrow-up-fill"></i>
+            <div>
+              <i className={fileUploaded ? '' : ''}></i>
+              <p className="">
+                Nomet savu failu šeit
+              </p>
+            </div>
           )}
-          <p className="mb-0 mt-12">
-            {fileUploaded ? 'Fails augšupielādēts!' : 'Nomet savu failu šeit'}
-          </p>
-          <button className="button" disabled={fileUploaded || uploadedFiles.length >= 3}>
-            {fileUploaded ? 'Paldies' : 'Izvēlies failu'}
+          <button className="button" onClick={handleSelectButtonClick}>
+            Izvēlies failu
           </button>
+          {/* Hidden file input element */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={(e) => handleFileSelection(e.target.files)}
+            style={{ display: 'none' }}
+            accept=".csv"
+            multiple
+          />
         </div>
       )}
     </div>
@@ -125,6 +102,8 @@ DropZone.propTypes = {
   handleUploadProgress: PropTypes.func.isRequired,
   setUploadedFileName: PropTypes.func.isRequired,
   showAlert: PropTypes.func.isRequired,
+  setSelectedFiles: PropTypes.func.isRequired, // Add the prop type for setSelectedFiles
+  setShowToast: PropTypes.func.isRequired, // Add the prop type for setShowToast
 };
 
 export default DropZone;

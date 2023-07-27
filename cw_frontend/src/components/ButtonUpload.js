@@ -1,53 +1,74 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import axios from 'axios';
+import PropTypes from 'prop-types';
 
-const uploadFiles = async (formData, handleUploadProgress) => {
-  try {
-    const response = await axios.post('http://127.0.0.1:5000/api/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data', // Set the content type explicitly
-      },
-      onUploadProgress: (progressEvent) => {
-        const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-        handleUploadProgress(progress);
-      },
-    });
-    console.log(response);
-    // Handle the response or any additional logic
-  } catch (error) {
-    console.error('An error occurred during upload:', error);
-    // Handle errors
-  }
-};
+const ButtonUpload = ({ selectedFiles }) => {
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-const ButtonUpload = ({ fileName }) => {
-  const handleUpload = async () => {
+  const handleUpload = useCallback(async (formData) => {
     try {
-      const formData = new FormData();
-      formData.append('file', fileName); // Append the file to the FormData
+      const response = await axios.post('http://127.0.0.1:5000/api/upload', formData, {
+        onUploadProgress: (progressEvent) => {
+          const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+          setUploadProgress(progress);
+        },
+      });
 
-      // Perform the upload action using the uploadFiles function
-      await uploadFiles(formData, handleUploadProgress);
+      // Check the response status to determine if the upload was successful
+      if (response.status === 200) {
+        // Once the file is uploaded successfully, trigger the processing logic
+        await triggerProcessing(response.data.filename);
+      } else {
+        // Handle the case when the response status is not 200
+        console.error('File upload failed!');
+      }
+    } catch (error) {
+      // Handle any errors that occurred during the API call
+      console.error('An error occurred while uploading the file.', error);
+    }
+  }, []);
+
+  const triggerProcessing = async (filename) => {
+    try {
+      // Call the API to trigger the file processing for the uploaded file
+      const response = await axios.get(`http://127.0.0.1:5000/api/process/${filename}`);
+      // You can handle the response here if needed
+      console.log('File processing response:', response.data);
+    } catch (error) {
+      // Handle any errors that occurred during the API call
+      console.error('An error occurred while triggering file processing.', error);
+    }
+  };
+
+  const handleButtonClick = async () => {
+    try {
+      // Upload all selected files
+      for (const file of selectedFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Perform the upload action using the handleUpload function
+        await handleUpload(formData);
+      }
     } catch (error) {
       // Handle errors
       console.error('An error occurred during upload:', error);
     }
   };
 
-  const handleUploadProgress = (progress) => {
-    // Handle the progress update
-    console.log('Upload progress:', progress);
-  };
-
   return (
     <button
       type="button"
       className="btn button-sm btn-sm"
-      onClick={handleUpload}
+      onClick={handleButtonClick}
     >
       Take action
     </button>
   );
+};
+
+ButtonUpload.propTypes = {
+  selectedFiles: PropTypes.array.isRequired,
 };
 
 export default ButtonUpload;

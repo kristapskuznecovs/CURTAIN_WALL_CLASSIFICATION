@@ -1,61 +1,62 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Toast } from 'bootstrap';
-import './ToastUpload.css';
-import './Buttons.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleStop, faTrashCan, faChevronUp, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
-const ToastUpload = ({ show, handleClose, fileName, progress }) => {
+import './ToastUpload.css';
+
+const ToastUpload = ({ show, progress, selectedFiles, handleFileRemove }) => {
+  const [isMinimized, setIsMinimized] = useState(false);
   const toastRef = useRef(null);
 
-  useEffect(() => {
-    if (show) {
-      showToast();
-    }
-  }, [show]);
-
-  const showToast = () => {
-    const toastElement = toastRef.current;
-    const toast = new Toast(toastElement, {
-      autohide: false // Prevent the toast from automatically hiding
-    });
-    toast.show();
+  const handleMinimize = () => {
+    setIsMinimized(true);
   };
 
-const renderProgress = () => {
-  if (progress === 100) {
+  const handleMaximize = () => {
+    setIsMinimized(false);
+  };
+
+  const renderFilesList = () => {
     return (
-      <div className="d-flex align-items-center">
-        <div className="spinner-grow text-success toast-spinner me-2" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <span>{fileName}</span>
-        <i className="bi bi-check-circle-fill text-success ms-2"></i>
+      <div>
+        <ul style={{ listStyleType: "none", padding: 0 }}>
+          {selectedFiles.map((file, index) => (
+            <li key={index} style={{ display: "flex", alignItems: "center" }}>
+              <span style={{ marginRight: "8px" }}>
+                <FontAwesomeIcon icon={faCircleStop} style={{ color: progress === 100 ? 'green' : 'grey' }} />
+                </span>
+                <span style={{ flex: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                {file.name}
+                </span>
+              <button onClick={() => handleFileRemove(file.name)} className="trash-button">
+                <FontAwesomeIcon icon={faTrashCan} />
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
     );
-  } else {
-    return (
-      <div className="d-flex align-items-center">
-        <div className="spinner-border text-primary toast-spinner me-2" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <span>{fileName}</span>
-        <span className="ms-2">Uploading: {progress}%</span>
-      </div>
-    );
-  }
-};
+  };
 
   return (
     <div>
-      <div className="toast" ref={toastRef} role="alert" aria-live="assertive" aria-atomic="true">
+      <div className={`toast ${show ? 'show' : ''} ${isMinimized ? 'minimized' : ''}`} ref={toastRef} role="alert" aria-live="assertive" aria-atomic="true">
         <div className="toast-header bg-light">
-          <strong className="me-auto">Pievienotie faili </strong>
-          <button type="button" className="btn-close" data-bs-dismiss="toast" aria-label="Close" onClick={handleClose}></button>
+        <strong className="me-auto">Pievienoti {selectedFiles.length} faili </strong>
+          <div className="button-group">
+            <button type="button" className="min-max-button" onClick={isMinimized ? handleMaximize : handleMinimize}>
+              <FontAwesomeIcon icon={isMinimized ? faChevronUp : faChevronDown} />
+            </button>
+          </div>
         </div>
-        <div className="toast-body">
-          {renderProgress()}
+        {!isMinimized && (
+          <div className="toast-body">
+            {renderFilesList()}
+          </div>
+        )}
       </div>
     </div>
-  </div>
   );
 };
 

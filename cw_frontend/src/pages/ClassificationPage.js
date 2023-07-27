@@ -1,57 +1,78 @@
-import React, { useState } from 'react';
-import DropZone from '../components/DropZone';
-import ToastUpload from '../components/ToastUpload';
-import ButtonDownload from '../components/ButtonDownload';
-import './Text.css'
+  import React, { useState } from 'react';
+  import DropZone from '../components/DropZone';
+  import ToastUpload from '../components/ToastUpload';
+  import ButtonUpload from '../components/ButtonUpload';
+  import './Text.css'
 
-const ClassificationPage = ({ showAlert }) => {
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadedFileName, setUploadedFileName] = useState('');
-  const [showToast, setShowToast] = useState(false);
+  const ClassificationPage = ({ showAlert }) => {
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadedFileName, setUploadedFileName] = useState('');
+    const [showToast, setShowToast] = useState(false);
+    const [selectedFiles, setSelectedFiles] = useState([]);
 
-  const handleUploadProgress = (progress) => {
-    setUploadProgress(progress);
-  };
+    const handleUploadProgress = (progress) => {
+      setUploadProgress(progress);
+    };
 
-  const handleFileUploadSuccess = (fileName) => {
-    setUploadedFileName(fileName);
-    setShowToast(true);
-  };
+    const handleFileUploadSuccess = (fileName) => {
+      setUploadedFileName(fileName);
+      setShowToast(true);
+    };
 
-  const handleShowToast = () => {
-    setShowToast(true);
-  };
+    const handleShowToast = () => {
+      setShowToast(true);
+    };
 
-  const handleCloseToast = () => {
-    setShowToast(false);
-  };
+    const handleCloseToast = () => {
+      setShowToast(false);
+    };
 
-  return (
-    <div className="full-screen-container">
-      <div className="row">
-        <div className="col-md-12">
-          <h2 className="upload-heading">Pievieno fasādes failu</h2>
+    const handleFileRemove = (fileName) => {
+      setSelectedFiles(prevSelectedFiles => prevSelectedFiles.filter(file => file.name !== fileName));
+    };
+
+    return (
+      <div className="full-screen-container">
+        <div className="row">
+          <div className="col-md-12">
+            <h2 className="upload-heading">Pievieno fasādes failu</h2>
+          </div>
         </div>
-      </div>
-      <div className="row">
-        <div className="col-md-12">
-          <DropZone             
-            handleUploadProgress={handleUploadProgress}
-            setUploadedFileName={setUploadedFileName}
-            showAlert={showAlert}
+        <div className="row">
+          <div className="col-md-12">
+            <DropZone
+              handleUploadProgress={handleUploadProgress}
+              setUploadedFileName={setUploadedFileName}
+              showAlert={showAlert}
+              handleFileUploadSuccess={handleFileUploadSuccess}
+              selectedFiles={selectedFiles}
+              setSelectedFiles={setSelectedFiles} // Pass the callback function to update selectedFiles
+              setShowToast={setShowToast} // Pass setShowToast to the DropZone component
+            />
+          </div>
+        </div>
+        <div className=""> {/* Center the button */}
+          <div className="col-md-12">
+            <ButtonUpload
+            fileName={uploadedFileName}
             handleFileUploadSuccess={handleFileUploadSuccess}
-          />
-             <button className="button" onClick={() => setShowToast(true)}>Open Toast</button>
+            selectedFiles={selectedFiles}
+            />
+          </div>
+        </div>
+        {showToast && ( // Render ToastUpload when showToast is true
           <ToastUpload
             show={showToast}
             handleClose={handleCloseToast}
             fileName={uploadedFileName}
             progress={uploadProgress}
-            />
-        </div>
+            selectedFiles={selectedFiles} // Pass selectedFiles to ToastUpload
+            handleFileRemove={handleFileRemove} // Pass the handleFileRemove function to the ToastUpload component
+          />
+        )}
       </div>
-    </div>
-  );
-};
+    );
+    
+  };
 
-export default ClassificationPage;
+  export default ClassificationPage;
