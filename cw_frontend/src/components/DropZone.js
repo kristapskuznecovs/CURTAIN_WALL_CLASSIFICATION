@@ -107,5 +107,3 @@ DropZone.propTypes = {
 };
 
 export default DropZone;
-
-//explain code
