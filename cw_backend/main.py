@@ -17,5 +17,5 @@ if __name__ == '__main__':
         ProcessFile.set_current_directory(current_dir)
         FlaskApp.app.run()
     else:
-        result = ProcessFile.process_files("GeelyError2.csv")
+        result = ProcessFile.process_files("Sickla6.csv")
         print('Finished')

@@ -4,13 +4,11 @@ import Profile
 
 import Settings
 
-
 tolerance = Settings.settings["profile_end_tolerance"]
 
 
 class Opening:
     def __init__(self, height, width, origin: Geometry.Point, profiles, plane, level):
-
         self.top = ''
         self.right = ''
         self.bottom = ''
@@ -95,7 +93,7 @@ def get_crossing_profiles(inside_profiles, father: Opening):
             if (abs(profile.start.x - father.origin.x) < tolerance and abs(
                     profile.end.x - father.origin.x - width) < tolerance) or (
                     abs(profile.end.x - father.origin.x) < tolerance and abs(
-                    profile.start.x - father.origin.x - width) < tolerance):
+                profile.start.x - father.origin.x - width) < tolerance):
                 crossing_profiles.append(profile)
             else:
                 other_profiles.append(profile)
@@ -104,12 +102,102 @@ def get_crossing_profiles(inside_profiles, father: Opening):
             if (abs(profile.start.y - father.origin.y) < tolerance and abs(
                     profile.end.y - father.origin.y - height) < tolerance) or (
                     abs(profile.end.y - father.origin.y) < tolerance and abs(
-                    profile.start.y - father.origin.y - height) < tolerance):
+                profile.start.y - father.origin.y - height) < tolerance):
                 crossing_profiles.append(profile)
             else:
                 other_profiles.append(profile)
 
     return crossing_profiles, other_profiles
+
+
+def get_imperfect_v_split_coordinates(top, bottom, left, right):
+    if bottom is not None:
+        bottom: Profile
+        y1 = bottom.middle_point.y
+    else:
+        possible_y1 = []
+        if right is not None:
+            possible_y1.append(right.start.y)
+        if left is not None:
+            possible_y1.append(left.start.y)
+        y1 = max(possible_y1)
+
+    if top is not None:
+        top: Profile
+        y2 = top.middle_point.y
+    else:
+        possible_y2 = []
+        if right is not None:
+            possible_y2.append(right.end.y)
+        if left is not None:
+            possible_y2.append(left.end.y)
+        y2 = min(possible_y2)
+
+    if left is not None:
+        x1 = left.middle_point.x
+    else:
+        possible_x1 = []
+        if top is not None:
+            possible_x1.append(top.start.x)
+        if bottom is not None:
+            possible_x1.append(bottom.start.x)
+        x1 = max(possible_x1)
+
+    if right is not None:
+        x2 = right.middle_point.x
+    else:
+        possible_x2 = []
+        if top is not None:
+            possible_x2.append(top.end.x)
+        if bottom is not None:
+            possible_x2.append(bottom.end.x)
+        x2 = min(possible_x2)
+
+    return {"x1": x1, "x2": x2, "y1": y1, "y2": y2}
+
+
+def get_imperfect_h_split_coordinates(top, bottom, left, right):
+    if bottom is not None:
+        y1 = bottom.middle_point.y
+    else:
+        possible_y1 = []
+        if right is not None:
+            possible_y1.append(right.start.y)
+        if left is not None:
+            possible_y1.append(left.start.y)
+        y1 = max(possible_y1)
+
+    if top is not None:
+        y2 = top.middle_point.y
+    else:
+        possible_y2 = []
+        if right is not None:
+            possible_y2.append(right.end.y)
+        if left is not None:
+            possible_y2.append(left.end.y)
+        y2 = min(possible_y2)
+
+    if left is not None:
+        x1 = left.middle_point.x
+    else:
+        possible_x1 = []
+        if top is not None:
+            possible_x1.append(top.start.x)
+        if bottom is not None:
+            possible_x1.append(bottom.start.x)
+        x1 = max(possible_x1)
+
+    if right is not None:
+        x2 = right.middle_point.x
+    else:
+        possible_x2 = []
+        if top is not None:
+            possible_x2.append(top.end.x)
+        if bottom is not None:
+            possible_x2.append(bottom.end.x)
+        x2 = min(possible_x2)
+
+    return {"x1": x1, "x2": x2, "y1": y1, "y2": y2}
 
 
 def recursion_split_openings(father: Opening, inside_profiles, level):
@@ -144,8 +232,11 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
 
                 # If opening has all 4 perimeter profiles, more precise geometry information can be created
                 if None not in all_profiles:
+                    left_coordinate = left.middle_point.x
+                    right_coordinate = right.middle_point.x
                     for profile in non_crossing_profiles:
-                        if left.middle_point.x < profile.middle_point.x < right.middle_point.x:
+                        middle_coordinate = profile.middle_point.x
+                        if left_coordinate < middle_coordinate < right_coordinate:
                             all_profiles.append(profile)
                             local_inside_profiles.append(profile)
                     local_height = top.middle_point.y - bottom.middle_point.y
@@ -167,6 +258,7 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
 
                     # if Any perimeter profile is missing (opening has only 3 edge profiles, e.g. corner elements)
                     # Imprecise geometry information is created based on start/end handles instead of middle points.
+
                     for profile in non_crossing_profiles:
                         x1 = father.origin.x
                         x2 = father.origin.x + width
@@ -174,50 +266,16 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
                             all_profiles.append(profile)
                             local_inside_profiles.append(profile)
 
-                    if bottom is not None:
-                        bottom: Profile
-                        y1 = bottom.middle_point.y
-                    else:
-                        possible_y1 = []
-                        if right is not None:
-                            possible_y1.append(right.start.y)
-                        if left is not None:
-                            possible_y1.append(left.start.y)
-                        y1 = max(possible_y1)
+                    coordinates = get_imperfect_v_split_coordinates(top, bottom, left, right)
 
-                    if top is not None:
-                        top: Profile
-                        y2 = top.middle_point.y
-                    else:
-                        possible_y2 = []
-                        if right is not None:
-                            possible_y2.append(right.end.y)
-                        if left is not None:
-                            possible_y2.append(left.end.y)
-                        y2 = min(possible_y2)
-                    local_height = y2 - y1
-
-                    if left is not None:
-                        x1 = left.middle_point.x
-                    else:
-                        possible_x1 = []
-                        if top is not None:
-                            possible_x1.append(top.start.x)
-                        if bottom is not None:
-                            possible_x1.append(bottom.start.x)
-                        x1 = max(possible_x1)
-
-                    if right is not None:
-                        x2 = right.middle_point.x
-                    else:
-                        possible_x2 = []
-                        if top is not None:
-                            possible_x2.append(top.end.x)
-                        if bottom is not None:
-                            possible_x2.append(bottom.end.x)
-                        x2 = min(possible_x2)
+                    x1 = coordinates["x1"]
+                    x2 = coordinates["x2"]
+                    y1 = coordinates["y1"]
+                    y2 = coordinates["y2"]
 
                     local_width = x2 - x1
+                    local_height = y2 - y1
+
                     local_origin = Geometry.Point(x1, y1, 0)
                     new_opening = Opening(local_height, local_width, local_origin, all_profiles, plane, level)
                     father.children.append(new_opening)
@@ -248,10 +306,12 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
                 local_inside_profiles = []
 
                 if None not in all_profiles:
-
+                    bottom_coordinate = bottom.middle_point.y
+                    top_coordinate = top.middle_point.y
                     for profile in non_crossing_profiles:
+                        middle_coordinate = profile.middle_point.y
 
-                        if bottom.middle_point.y < profile.middle_point.y < top.middle_point.y:
+                        if bottom_coordinate < middle_coordinate < top_coordinate:
                             all_profiles.append(profile)
                             local_inside_profiles.append(profile)
                     local_height = top.middle_point.y - bottom.middle_point.y
@@ -277,48 +337,16 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
                             all_profiles.append(profile)
                             local_inside_profiles.append(profile)
 
-                    if bottom is not None:
-                        y1 = bottom.middle_point.y
-                    else:
-                        possible_y1 = []
-                        if right is not None:
-                            possible_y1.append(right.start.y)
-                        if left is not None:
-                            possible_y1.append(left.start.y)
-                        y1 = max(possible_y1)
+                    coordinates = get_imperfect_h_split_coordinates(top, bottom, left, right)
 
-                    if top is not None:
-                        y2 = top.middle_point.y
-                    else:
-                        possible_y2 = []
-                        if right is not None:
-                            possible_y2.append(right.end.y)
-                        if left is not None:
-                            possible_y2.append(left.end.y)
-                        y2 = min(possible_y2)
-                    local_height = y2 - y1
-
-                    if left is not None:
-                        x1 = left.middle_point.x
-                    else:
-                        possible_x1 = []
-                        if top is not None:
-                            possible_x1.append(top.start.x)
-                        if bottom is not None:
-                            possible_x1.append(bottom.start.x)
-                        x1 = max(possible_x1)
-
-                    if right is not None:
-                        x2 = right.middle_point.x
-                    else:
-                        possible_x2 = []
-                        if top is not None:
-                            possible_x2.append(top.end.x)
-                        if bottom is not None:
-                            possible_x2.append(bottom.end.x)
-                        x2 = min(possible_x2)
+                    x1 = coordinates["x1"]
+                    x2 = coordinates["x2"]
+                    y1 = coordinates["y1"]
+                    y2 = coordinates["y2"]
 
                     local_width = x2 - x1
+                    local_height = y2 - y1
+
                     local_origin = Geometry.Point(x1, y1, 0)
                     new_opening = Opening(local_height, local_width, local_origin, all_profiles, plane, level)
                     father.children.append(new_opening)
@@ -333,8 +361,9 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
                         continue
                     recursion_split_openings(new_opening, local_inside_profiles, level + 1)
 
-    # else:
-    #     print(f"There are inside profiles that aren't crossing anything!\n{father}")
+    else:
+        print(f"There are inside profiles that aren't crossing anything!\n{father}")
+
 
 def assign_opening_type(opening, plane, point_cloud_array):
     if len(opening.children) == 0:

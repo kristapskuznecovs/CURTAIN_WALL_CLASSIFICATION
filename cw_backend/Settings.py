@@ -5,8 +5,11 @@ settings = {
     "profile_end_tolerance": 100,
     "json_folder": 'Results',
     "output_folder": 'Output',
+    "svg_folder": 'svg_folder',
+    "difference_results": 'difference_analysis',
     "write_jsons": True,
-    "draw_element": True,
+    "draw_element": False,
     "analyze_json": True,
+    "analyze_differences": False,
     "assign_opening_type": False
 }

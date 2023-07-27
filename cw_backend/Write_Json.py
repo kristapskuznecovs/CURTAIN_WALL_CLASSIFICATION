@@ -23,9 +23,6 @@ def delete_files_in_folder(folder_path):
 
 
 def write_json(element, json_folder):
-
-
-
     guid = element.guid
     height = round(element.element_planes[0].height, accuracy)
     width = 0
