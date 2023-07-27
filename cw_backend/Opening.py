@@ -361,8 +361,8 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
                         continue
                     recursion_split_openings(new_opening, local_inside_profiles, level + 1)
 
-    else:
-        print(f"There are inside profiles that aren't crossing anything!\n{father}")
+    # else:
+        # print(f"There are inside profiles that aren't crossing anything!\n{father}")
 
 
 def assign_opening_type(opening, plane, point_cloud_array):
