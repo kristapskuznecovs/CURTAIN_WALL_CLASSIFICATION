@@ -14,7 +14,8 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 if __name__ == '__main__':
     if web:
         FlaskApp.set_current_directory(current_dir)
+        ProcessFile.set_current_directory(current_dir)
         FlaskApp.app.run()
     else:
-        result = ProcessFile.process_files("Geely2.csv")
+        result = ProcessFile.process_files("GeelyError2.csv")
         print('Finished')

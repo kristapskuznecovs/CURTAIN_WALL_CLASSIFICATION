@@ -8,9 +8,16 @@ import AnalyzeJsons
 import Settings
 
 results = {}  # Store the results
-current_dir = os.getcwd()
+
 
 settings = Settings.settings
+
+current_dir = ''
+
+
+def set_current_directory(current_directory):
+    global current_dir
+    current_dir = current_directory
 
 
 def process_files(filename):
