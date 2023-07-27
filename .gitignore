@@ -1,8 +1,13 @@
 # Ignore node_modules folder
 cw_frontend/node_modules/
 
-# Ignore Python 
+# Ignore Python folders
 cw_backend/__pycache__/
+cw_backend/difference_analysis/
+cw_backend/Output/
+cw_backend/Results/
+cw_backend/svg_folder/
+
 
 # Ignore Download files
 cw_backend/node_input/
