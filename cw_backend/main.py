@@ -11,11 +11,12 @@ web = True
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
+
 if __name__ == '__main__':
     if web:
         FlaskApp.set_current_directory(current_dir)
         ProcessFile.set_current_directory(current_dir)
         FlaskApp.app.run()
     else:
-        result = ProcessFile.process_files("Sickla6.csv")
+        result = ProcessFile.process_files("SimpleElement_TestData (2).csv")
         print('Finished')
