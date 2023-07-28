@@ -54,7 +54,7 @@ def upload_file():
 
         # Prepare the response message
         response = {
-            'message': 'File uploaded and saved successfully',
+            'result': 'File uploaded and saved successfully',
             'filename': file.filename,
         }
 
@@ -64,7 +64,7 @@ def upload_file():
     except Exception as e:
         # Prepare the response message for upload failure
         response = {
-            'message': 'File upload failed',
+            'result': 'File upload failed',
             'filename': file.filename,
         }
         logging.exception('Error during file upload:')
