@@ -70,7 +70,7 @@ def upload_file():
         logging.exception('Error during file upload:')
         traceback.print_exc()
 
-    # Return the response with a 500 status code (Internal Server Error)
+        # Return the response with a 500 status code (Internal Server Error)
         return jsonify(response), 500
 
 
@@ -107,18 +107,22 @@ def delete_file(folder, filename):
 @app.route('/api/process/<filename>', methods=['GET'])
 def run_process_file(filename):
     response = {
-        'message': 'File processed successfully',
         'filename': filename,
+        'log': results
     }
     # Trigger the processing logic
     try:
-        result = ProcessFile.process_files(filename)
-        response['result'] = result
+        file_processed = ProcessFile.process_files(filename)
+        if file_processed:
+            response['result'] = 'File Processed successfully'
+
+        if not file_processed:
+            response['result'] = 'Processing error'
 
     except Exception as e:
         response['result'] = 'Processing error'
-        logging.exception('Error during processing:')
         traceback.print_exc()
+        return response
 
     return response
 

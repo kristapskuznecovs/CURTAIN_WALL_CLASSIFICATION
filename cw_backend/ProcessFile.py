@@ -7,8 +7,9 @@ import DrawElement
 import AnalyzeJsons
 import Settings
 import AnalyzeElementDifferences
+import ErrorHandling
 
-results = {}  # Store the results
+results = {"Errors": ErrorHandling.errors}  # Store the results
 
 
 settings = Settings.settings
@@ -23,6 +24,7 @@ def set_current_directory(current_directory):
 
 def process_files(filename):
     global current_dir
+
 
     # Input
     opening_report = os.path.join(current_dir, 'node_input', 'OpeningData.csv')
@@ -52,6 +54,9 @@ def process_files(filename):
 
     # Group profiles by GUID's into distinct element objects
     elements = ReadCSV.read_csv(profile_report)
+
+    if not elements:
+        return False
 
     if assign_opening_type:
         # Get point cloud from Opening Report
@@ -95,5 +100,5 @@ def process_files(filename):
                                                                                         output_folder,
                                                                                         difference_folder)
 
-        results[filename] = result  # Store the result using the filename as the key
-    return result
+        # results[filename] = result  # Store the result using the filename as the key
+    return True

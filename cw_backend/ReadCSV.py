@@ -1,11 +1,11 @@
 import csv
 import Element
 import Profile
-import logging
 import Verification
 import Settings
+import ErrorHandling
 
-logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - %(message)s')
+error_log_file = ErrorHandling.errors
 
 indexes = {"profile_index": 0,
            "length_index": 1,
@@ -22,7 +22,12 @@ indexes = {"profile_index": 0,
 
 left_to_right_direction = Settings.settings["left_to_right_direction"]
 
+
 def read_csv(file_path):
+    try:
+        error_log_file.pop("CSV PARSING")
+    except KeyError:
+        pass
     # Method will go over each row of csv file.
     # First it looks at guid, if such element has already been created.
     # Second if, necessary it creates new element object and then adds profile to necessary element.
@@ -37,27 +42,33 @@ def read_csv(file_path):
 
         for row in reader:
 
-            assembly_guid = row[indexes["assembly_guid_index"]]
 
-            # For AILE, "profiles" are beam elements AND cross-sections of those elements.
-            profile = row[indexes["profile_index"]]
+            try:
 
-            length = float(row[indexes["length_index"]].replace(" ", ""))
-            guid = row[indexes["part_guid_index"]]
-            start_x = float(row[indexes["start_x_index"]].replace(" ", ""))
-            start_y = float(row[indexes["start_y_index"]].replace(" ", ""))
-            start_z = float(row[indexes["start_z_index"]].replace(" ", ""))
-            end_x = float(row[indexes["end_x_index"]].replace(" ", ""))
-            end_y = float(row[indexes["end_y_index"]].replace(" ", ""))
-            end_z = float(row[indexes["end_z_index"]].replace(" ", ""))
-            delivery_number = row[indexes["delivery_number"]]
+                assembly_guid = row[indexes["assembly_guid_index"]]
+
+                # For AILE, "profiles" are beam elements AND cross-sections of those elements.
+                profile = row[indexes["profile_index"]]
+
+                length = float(row[indexes["length_index"]].replace(" ", ""))
+                guid = row[indexes["part_guid_index"]]
+                start_x = float(row[indexes["start_x_index"]].replace(" ", ""))
+                start_y = float(row[indexes["start_y_index"]].replace(" ", ""))
+                start_z = float(row[indexes["start_z_index"]].replace(" ", ""))
+                end_x = float(row[indexes["end_x_index"]].replace(" ", ""))
+                end_y = float(row[indexes["end_y_index"]].replace(" ", ""))
+                end_z = float(row[indexes["end_z_index"]].replace(" ", ""))
+                delivery_number = row[indexes["delivery_number"]]
+            except IndexError:
+                error_log_file["CSV PARSING"] = {"ERROR": "Index Error",
+                                                 "ROW": row,
+                                                 "CAUSE": "Most likely missing required columns, "
+                                                          "please see example CSV"}
+                return False
 
             if assembly_guid not in previous_element_guid:
                 previous_element_guid.add(assembly_guid)
                 elements.append(Element.Element(assembly_guid))
-
-
-
 
             for element in elements:
                 if element.guid == assembly_guid:
@@ -78,8 +89,6 @@ def read_csv(file_path):
         for element in bad_elements:
             print(element.guid)
         print()
-
-
 
     # After creation of element objects, profiles are split into element planes (necessary for corner elements)
 
