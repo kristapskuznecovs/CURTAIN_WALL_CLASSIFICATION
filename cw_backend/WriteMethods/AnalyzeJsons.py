@@ -189,7 +189,6 @@ def get_type_usage(opening, type_count):
             get_type_usage(child, type_count)
 
 
-
 def get_option_descriptions(json_folder):
     file_names = get_file_names(json_folder)
     option_descriptions = []
@@ -233,7 +232,6 @@ def get_option_descriptions(json_folder):
                 type_count_string += f'{opening_type_count[key]}{"-"} '
             else:
                 type_count_string += f'{opening_type_count[key]}{key} '
-
 
         string_option1 = f'{type_count_string}{string_option1}'
 

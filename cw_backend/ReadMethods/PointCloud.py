@@ -1,5 +1,5 @@
-import ReadOpeningCSVData
-import Geometry
+from cw_backend.ReadMethods import ReadOpeningCSVData
+from cw_backend.Classes.Other import Geometry
 
 
 def get_point_cloud_array(opening_report):

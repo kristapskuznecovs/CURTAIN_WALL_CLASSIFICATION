@@ -1,9 +1,8 @@
 import csv
-import Element
-import Profile
-import Verification
-import Settings
-import ErrorHandling
+from cw_backend.Classes.Element import Element, Profile
+from ..Erorrs import Verification
+from .. import Settings
+from ..Erorrs import ErrorHandling
 
 error_log_file = ErrorHandling.errors
 
@@ -41,7 +40,6 @@ def read_csv(file_path):
         next(reader)
 
         for row in reader:
-
 
             try:
 

@@ -1,6 +1,6 @@
-import AnalyzeJsons
-import Write_Json
-import Settings
+
+from cw_backend.WriteMethods import Write_Json, AnalyzeJsons
+from .. import Settings
 
 import os
 import json

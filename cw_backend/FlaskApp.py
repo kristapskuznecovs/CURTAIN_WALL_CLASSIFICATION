@@ -5,7 +5,7 @@ from flask import send_from_directory
 import os
 import logging
 
-import ProcessFile
+from cw_backend.ReadMethods import ProcessFile
 import Settings
 
 app = Flask(__name__)

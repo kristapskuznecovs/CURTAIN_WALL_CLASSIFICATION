@@ -1,8 +1,7 @@
-import Geometry
+from ..Other import Geometry
 import copy
-import Profile
-
-import Settings
+from ..Element import Profile
+from ... import Settings
 
 tolerance = Settings.settings["profile_end_tolerance"]
 

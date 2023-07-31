@@ -1,4 +1,4 @@
-import Geometry
+from ..Other import Geometry
 
 
 class Profile:

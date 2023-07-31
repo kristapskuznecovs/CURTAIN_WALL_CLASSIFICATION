@@ -1,6 +1,6 @@
-import Geometry
-import Profile
-import ElementPlane
+from ..Other import Geometry
+from ..Element import Profile
+from ..Element import ElementPlane
 
 
 # Element objects are first created as "dumb" objects only containing GUID, and added profiles to the profiles list

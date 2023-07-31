@@ -1,13 +1,9 @@
 import os
-import ReadCSV
-import PointCloud
-import Write_Json
-import Opening
-import DrawElement
-import AnalyzeJsons
-import Settings
-import AnalyzeElementDifferences
-import ErrorHandling
+from cw_backend.ReadMethods import ReadCSV, PointCloud
+from ..WriteMethods import Write_Json, DrawElement, AnalyzeJsons, AnalyzeElementDifferences
+from cw_backend.Classes.Element import Opening
+from .. import Settings
+from ..Erorrs import ErrorHandling
 
 results = {"Errors": ErrorHandling.errors}  # Store the results
 

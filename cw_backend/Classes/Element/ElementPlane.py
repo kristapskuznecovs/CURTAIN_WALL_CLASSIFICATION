@@ -1,9 +1,9 @@
 import math
 
-import Opening
-import Profile
-import Geometry
-import Settings
+from ..Element import Opening
+from ..Element import Profile
+from ..Other import Geometry
+from ... import Settings
 
 tolerance = Settings.settings["profile_end_tolerance"]
 

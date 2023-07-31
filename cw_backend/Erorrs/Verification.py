@@ -11,11 +11,7 @@ def any_profile_is_vertical(element):
     return False
 
 
-
-
-
 def valid_or_invalid_elements(elements):
-
     element_list_copy = elements[:]
     bad_elements = []
     used_delivery_numbers = set()
@@ -29,4 +25,3 @@ def valid_or_invalid_elements(elements):
             bad_elements.append(element)
 
     return elements, bad_elements
-

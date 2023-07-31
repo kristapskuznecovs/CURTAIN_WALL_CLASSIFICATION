@@ -1,9 +1,6 @@
-import Element
-import Write_Json
+from cw_backend.Classes.Element import Element
 
 import drawsvg as draw
-
-import Settings
 
 
 def add_profile_to_drawing(drawing, profile, level, element_height, x_offset, perimeter_profile=True, border=10, scale=20,
