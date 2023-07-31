@@ -62,7 +62,7 @@ const ButtonUpload = ({ selectedFiles }) => {
       className="btn button-sm btn-sm"
       onClick={handleButtonClick}
     >
-      Take action
+      Upload
     </button>
   );
 };
