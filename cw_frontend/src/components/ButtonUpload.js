@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import axios from 'axios';
 import PropTypes from 'prop-types';
+import './Buttons.css';
 
 const ButtonUpload = ({ selectedFiles }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -59,7 +60,7 @@ const ButtonUpload = ({ selectedFiles }) => {
   return (
     <button
       type="button"
-      className="btn button-sm btn-sm"
+      className="button"
       onClick={handleButtonClick}
     >
       Upload
