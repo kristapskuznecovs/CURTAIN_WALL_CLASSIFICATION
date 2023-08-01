@@ -11,3 +11,6 @@ cw_backend/svg_folder/
 
 # Ignore Download files
 cw_backend/node_input/
+
+#Ignore .vscode folder
+.vscode/
