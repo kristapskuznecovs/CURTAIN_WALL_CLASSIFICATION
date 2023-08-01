@@ -1,4 +1,4 @@
-from cw_backend.Classes.Element import Element
+from cw_backend.src.classes.element_representation import element as element_module
 
 import drawsvg as draw
 
@@ -89,11 +89,11 @@ def draw_element(element, svg_folder):
     border = 10  # Border between images in svg file
     scale = 20
 
-    element_dimensions = Element.get_element_dimensions(element)
+    element_dimensions = element_module.get_element_dimensions(element)
 
-    max_level = Element.get_element_max_level(element) + 1  # Depth level for opening recursion splitting
+    max_level = element_module.get_element_max_level(element) + 1  # Depth level for opening recursion splitting
 
-    # Element data
+    # element_representation data
     height = element_dimensions["HEIGHT"]
     width = element_dimensions["WIDTH"]
     element_height = int(height / scale)

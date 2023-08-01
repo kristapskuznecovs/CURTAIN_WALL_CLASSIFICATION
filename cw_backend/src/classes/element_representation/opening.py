@@ -1,13 +1,13 @@
-from ..Other import Geometry
 import copy
-from ..Element import Profile
-from ... import Settings
 
-tolerance = Settings.settings["profile_end_tolerance"]
+from cw_backend.src.classes.other import geometry
+from cw_backend.src import settings
+
+tolerance = settings.settings["profile_end_tolerance"]
 
 
 class Opening:
-    def __init__(self, height, width, origin: Geometry.Point, profiles, plane, level):
+    def __init__(self, height, width, origin: geometry.Point, profiles, plane, level):
         self.top = ''
         self.right = ''
         self.bottom = ''
@@ -19,7 +19,7 @@ class Opening:
         self.profiles_inside = ''
         self.origin = origin
 
-        self.center = Geometry.Point(int(origin.x + width / 2), int(origin.y + height / 2), int(origin.z))
+        self.center = geometry.Point(int(origin.x + width / 2), int(origin.y + height / 2), int(origin.z))
         self.type = ''
 
         self.children = []
@@ -87,35 +87,34 @@ def get_crossing_profiles(inside_profiles, father: Opening):
     crossing_profiles = []
     other_profiles = []
 
-    for profile in inside_profiles:
-        if profile.direction == 'H':
-            if (abs(profile.start.x - father.origin.x) < tolerance and abs(
-                    profile.end.x - father.origin.x - width) < tolerance) or (
-                    abs(profile.end.x - father.origin.x) < tolerance and abs(
-                    profile.start.x - father.origin.x - width) < tolerance):
+    for inside_profile in inside_profiles:
+        if inside_profile.direction == 'H':
+            if (abs(inside_profile.start.x - father.origin.x) < tolerance and abs(
+                    inside_profile.end.x - father.origin.x - width) < tolerance) or (
+                    abs(inside_profile.end.x - father.origin.x) < tolerance and abs(
+                    inside_profile.start.x - father.origin.x - width) < tolerance):
 
-                crossing_profiles.append(profile)
-
-            else:
-                other_profiles.append(profile)
-
-        if profile.direction == 'V':
-            if (abs(profile.start.y - father.origin.y) < tolerance and abs(
-                    profile.end.y - father.origin.y - height) < tolerance) or (
-                    abs(profile.end.y - father.origin.y) < tolerance and abs(
-                    profile.start.y - father.origin.y - height) < tolerance):
-
-                crossing_profiles.append(profile)
+                crossing_profiles.append(inside_profile)
 
             else:
-                other_profiles.append(profile)
+                other_profiles.append(inside_profile)
+
+        if inside_profile.direction == 'V':
+            if (abs(inside_profile.start.y - father.origin.y) < tolerance and abs(
+                    inside_profile.end.y - father.origin.y - height) < tolerance) or (
+                    abs(inside_profile.end.y - father.origin.y) < tolerance and abs(
+                    inside_profile.start.y - father.origin.y - height) < tolerance):
+
+                crossing_profiles.append(inside_profile)
+
+            else:
+                other_profiles.append(inside_profile)
 
     return crossing_profiles, other_profiles
 
 
 def get_imperfect_v_split_coordinates(top, bottom, left, right):
     if bottom is not None:
-        bottom: Profile
         y1 = bottom.middle_point.y
     else:
         possible_y1 = []
@@ -126,7 +125,6 @@ def get_imperfect_v_split_coordinates(top, bottom, left, right):
         y1 = max(possible_y1)
 
     if top is not None:
-        top: Profile
         y2 = top.middle_point.y
     else:
         possible_y2 = []
@@ -213,14 +211,11 @@ def add_perimeter_profiles_to_new_opening(new_opening, top, bottom, right, left,
 
 
 def recursion_split_openings(father: Opening, inside_profiles, level):
-
     # if there are no profiles inside the opening, no further splitting necessary
     if len(inside_profiles) == 0:
         return True
 
     plane = father.plane
-    width = father.width
-    height = father.height
 
     # Get a list which profiles are fully crossing the father opening - splitting the father and creating new openings
     crossing_profiles, non_crossing_profiles = get_crossing_profiles(inside_profiles, father)
@@ -248,15 +243,15 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
                 if None not in all_profiles:
                     left_coordinate = left.middle_point.x
                     right_coordinate = right.middle_point.x
-                    for profile in non_crossing_profiles:
-                        middle_coordinate = profile.middle_point.x
+                    for non_crossing_profile in non_crossing_profiles:
+                        middle_coordinate = non_crossing_profile.middle_point.x
                         if left_coordinate < middle_coordinate < right_coordinate:
-                            all_profiles.append(profile)
-                            local_inside_profiles.append(profile)
+                            all_profiles.append(non_crossing_profile)
+                            local_inside_profiles.append(non_crossing_profile)
                     local_height = top.middle_point.y - bottom.middle_point.y
                     local_width = right.middle_point.x - left.middle_point.x
 
-                    local_origin = Geometry.Point(left.middle_point.x, bottom.middle_point.y, 0)
+                    local_origin = geometry.Point(left.middle_point.x, bottom.middle_point.y, 0)
 
                     new_opening = Opening(local_height, local_width, local_origin, all_profiles, plane, level)
                     father.children.append(new_opening)
@@ -282,15 +277,14 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
                     local_width = x2 - x1
                     local_height = y2 - y1
 
-                    local_origin = Geometry.Point(x1, y1, 0)
+                    local_origin = geometry.Point(x1, y1, 0)
 
                     # Find profiles from non-crossing profiles that need to be added to the new opening
-                    for profile in non_crossing_profiles:
-                        middle_coordinate = profile.middle_point.x
+                    for non_crossing_profile in non_crossing_profiles:
+                        middle_coordinate = non_crossing_profile.middle_point.x
                         if x1 < middle_coordinate < x2:
-                            all_profiles.append(profile)
-                            local_inside_profiles.append(profile)
-
+                            all_profiles.append(non_crossing_profile)
+                            local_inside_profiles.append(non_crossing_profile)
 
                     new_opening = Opening(local_height, local_width, local_origin, all_profiles, plane, level)
                     father.children.append(new_opening)
@@ -321,15 +315,15 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
                 if None not in all_profiles:
                     bottom_coordinate = bottom.middle_point.y
                     top_coordinate = top.middle_point.y
-                    for profile in non_crossing_profiles:
-                        middle_coordinate = profile.middle_point.y
+                    for non_crossing_profile in non_crossing_profiles:
+                        middle_coordinate = non_crossing_profile.middle_point.y
 
                         if bottom_coordinate < middle_coordinate < top_coordinate:
-                            all_profiles.append(profile)
-                            local_inside_profiles.append(profile)
+                            all_profiles.append(non_crossing_profile)
+                            local_inside_profiles.append(non_crossing_profile)
                     local_height = top.middle_point.y - bottom.middle_point.y
                     local_width = right.middle_point.x - left.middle_point.x
-                    local_origin = Geometry.Point(left.middle_point.x, bottom.middle_point.y, 0)
+                    local_origin = geometry.Point(left.middle_point.x, bottom.middle_point.y, 0)
                     new_opening = Opening(local_height, local_width, local_origin, all_profiles, plane, level)
                     father.children.append(new_opening)
                     add_perimeter_profiles_to_new_opening(new_opening,
@@ -352,13 +346,13 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
                     local_width = x2 - x1
                     local_height = y2 - y1
 
-                    for profile in non_crossing_profiles:
-                        middle_coordinate = profile.middle_point.y
+                    for non_crossing_profile in non_crossing_profiles:
+                        middle_coordinate = non_crossing_profile.middle_point.y
                         if y1 < middle_coordinate < y2:
-                            all_profiles.append(profile)
-                            local_inside_profiles.append(profile)
+                            all_profiles.append(non_crossing_profile)
+                            local_inside_profiles.append(non_crossing_profile)
 
-                    local_origin = Geometry.Point(x1, y1, 0)
+                    local_origin = geometry.Point(x1, y1, 0)
                     new_opening = Opening(local_height, local_width, local_origin, all_profiles, plane, level)
                     father.children.append(new_opening)
                     add_perimeter_profiles_to_new_opening(new_opening,
@@ -376,10 +370,12 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
 
 def assign_opening_type(opening, plane, point_cloud_array):
     if len(opening.children) == 0:
-        opening_center_global = Geometry.get_global_coordinate(opening.center, plane)
+        opening_center_global = geometry.get_global_coordinate(opening.center, plane)
 
-        index = int(round(Geometry.distance_to_zero(opening_center_global) / 1000, 0))
+        index = int(round(geometry.distance_to_zero(opening_center_global) / 1000, 0))
         # print(index)
+
+        point_cloud = ''
         try:
             point_cloud = point_cloud_array[index - 1] + point_cloud_array[index] + point_cloud_array[index + 1]
         except Exception as e:
@@ -389,15 +385,15 @@ def assign_opening_type(opening, plane, point_cloud_array):
             opening.type = None
         else:
             closest_point = point_cloud[0]
-            distance = Geometry.distance_2pt(opening_center_global, closest_point)
+            distance = geometry.distance_2pt(opening_center_global, closest_point)
 
             for point in point_cloud:
-                temp_distance = Geometry.distance_2pt(point, opening_center_global)
+                temp_distance = geometry.distance_2pt(point, opening_center_global)
                 if distance >= temp_distance:
                     closest_point = point
                     distance = temp_distance
 
-            if Geometry.distance_2pt(closest_point, opening_center_global) < 400:
+            if geometry.distance_2pt(closest_point, opening_center_global) < 400:
                 opening.type = closest_point.name
             else:
                 opening.type = "-"

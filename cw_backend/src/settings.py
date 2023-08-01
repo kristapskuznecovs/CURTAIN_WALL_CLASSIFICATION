@@ -8,8 +8,9 @@ settings = {
     "svg_folder": 'svg_folder',
     "difference_results": 'difference_analysis',
     "write_jsons": True,
-    "draw_element": False,
+    "draw_element": True,
     "analyze_json": True,
-    "analyze_differences": False,
-    "assign_opening_type": False
+    "analyze_differences": True,
+    "assign_opening_type": False,
+    "node_input": 'node_input'
 }

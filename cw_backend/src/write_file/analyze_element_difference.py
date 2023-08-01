@@ -1,6 +1,5 @@
-
-from cw_backend.WriteMethods import Write_Json, AnalyzeJsons
-from .. import Settings
+from cw_backend.src.write_file import analyze_jsons, write_json
+from cw_backend.src import settings
 
 import os
 import json
@@ -97,7 +96,7 @@ def append_opening_to_tree_object(main_object, tree_object, add_first_level=Fals
     added = False
 
     for key in height_keys:
-        if abs(height_1-key) < min_tolerance:
+        if abs(height_1 - key) < min_tolerance:
             tree_object["HEIGHT"][key]["DELIVERY_NUMBER"].append(main_object["DELIVERY_NUMBER"])
             tree_object["HEIGHT"][key]["COUNT"] += 1
             added = True
@@ -153,14 +152,12 @@ def add_to_data_tree(data_tree, opening, tolerance, min_tolerance=0.02):
             break
 
     if not added:
-
         modify_opening_for_first_insertion_into_tree(opening, add_first_level=True)
 
         data_tree.append(opening)
 
 
 def modify_opening_for_first_insertion_into_tree(opening, add_first_level=False):
-
     opening["HEIGHT"][opening["HEIGHT"]["MAX"]] = {"DELIVERY_NUMBER": [opening["DELIVERY_NUMBER"]], "COUNT": 1}
     opening["WIDTH"][opening["WIDTH"]["MAX"]] = {"DELIVERY_NUMBER": [opening["DELIVERY_NUMBER"]], "COUNT": 1}
 
@@ -215,16 +212,14 @@ def change_min_max_to_single_value(tree_object, top_level_count=False):
 
 
 def get_count_of_elements_to_adjust(data_tree_object, adjust_elements):
-
-
     keys = [x for x in data_tree_object["HEIGHT"].keys() if isinstance(x, float)]
 
     if len(keys) > 1:
         lists = [data_tree_object["HEIGHT"][key]["DELIVERY_NUMBER"] for key in keys]
         lists.sort(key=lambda x: len(x), reverse=True)
 
-        for i in range(len(lists)-1):
-            for value in lists[i+1]:
+        for i in range(len(lists) - 1):
+            for value in lists[i + 1]:
                 adjust_elements.add(value)
 
     keys = [x for x in data_tree_object["WIDTH"].keys() if isinstance(x, float)]
@@ -243,16 +238,16 @@ def get_count_of_elements_to_adjust(data_tree_object, adjust_elements):
 
 
 def generate_report_of_similar_but_different_openings(json_folder, output_folder, difference_folder):
-    file_names = AnalyzeJsons.get_file_names(json_folder)
+    file_names = analyze_jsons.get_file_names(json_folder)
 
     data_tree = []
     bad_tree_objects = []
 
     # mm
-    tolerance = Settings.settings["max_tolerance"]
+    tolerance = settings.settings["max_tolerance"]
 
     # mm
-    min_tolerance = Settings.settings["min_tolerance"]
+    min_tolerance = settings.settings["min_tolerance"]
 
     for i in range(len(file_names)):
         file_name = file_names[i]
@@ -280,14 +275,13 @@ def generate_report_of_similar_but_different_openings(json_folder, output_folder
         if not data_tree_object_min_max_check(tree_object):
             bad_tree_objects.append(tree_object)
 
-    Write_Json.delete_files_in_folder(difference_folder)
+    write_json.delete_files_in_folder(difference_folder)
 
     i = 1
 
     adjust_elements = set()
 
     for tree_object in data_tree:
-
         get_count_of_elements_to_adjust(tree_object, adjust_elements)
 
     print(f'Adjust {len(adjust_elements)} elements')
@@ -303,6 +297,5 @@ def generate_report_of_similar_but_different_openings(json_folder, output_folder
             file.write(json_data)
 
         i += 1
-
 
 # generate_report_of_similar_but_different_openings('Results', 'Output')

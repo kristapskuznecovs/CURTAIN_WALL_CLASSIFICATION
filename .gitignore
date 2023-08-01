@@ -3,14 +3,14 @@ cw_frontend/node_modules/
 
 # Ignore Python folders
 cw_backend/__pycache__/
-cw_backend/difference_analysis/
-cw_backend/Output/
-cw_backend/Results/
-cw_backend/svg_folder/
+cw_backend/data/difference_analysis/
+cw_backend/data/Output/
+cw_backend/data/Results/
+cw_backend/data/svg_folder/
 
 
 # Ignore Download files
-cw_backend/node_input/
+cw_backend/data/node_input/
 
 #Ignore .vscode folder
 .vscode/

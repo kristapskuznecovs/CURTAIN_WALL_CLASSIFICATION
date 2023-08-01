@@ -1,10 +1,9 @@
 import csv
-from cw_backend.Classes.Element import Element, Profile
-from ..Erorrs import Verification
-from .. import Settings
-from ..Erorrs import ErrorHandling
+from cw_backend.src.classes.element_representation import element as element_module, profile as profile_module
+from cw_backend.src.errors import verification, error_handling
+from cw_backend.src import settings
 
-error_log_file = ErrorHandling.errors
+error_log_file = error_handling.errors
 
 indexes = {"profile_index": 0,
            "length_index": 1,
@@ -19,7 +18,7 @@ indexes = {"profile_index": 0,
            "delivery_number": 10
            }
 
-left_to_right_direction = Settings.settings["left_to_right_direction"]
+left_to_right_direction = settings.settings["left_to_right_direction"]
 
 
 def read_csv(file_path):
@@ -46,7 +45,7 @@ def read_csv(file_path):
                 assembly_guid = row[indexes["assembly_guid_index"]]
 
                 # For AILE, "profiles" are beam elements AND cross-sections of those elements.
-                profile = row[indexes["profile_index"]]
+                new_profile = row[indexes["profile_index"]]
 
                 length = float(row[indexes["length_index"]].replace(" ", ""))
                 guid = row[indexes["part_guid_index"]]
@@ -66,26 +65,26 @@ def read_csv(file_path):
 
             if assembly_guid not in previous_element_guid:
                 previous_element_guid.add(assembly_guid)
-                elements.append(Element.Element(assembly_guid))
+                elements.append(element_module.Element(assembly_guid))
 
-            for element in elements:
-                if element.guid == assembly_guid:
-                    profile = Profile.Profile(profile, length, guid,
-                                              start_x, start_y, start_z,
-                                              end_x, end_y, end_z,
-                                              delivery_number)
+            for single_element in elements:
+                if single_element.guid == assembly_guid:
+                    new_profile = profile_module.Profile(new_profile, length, guid,
+                                                         start_x, start_y, start_z,
+                                                         end_x, end_y, end_z,
+                                                         delivery_number)
 
                     if not left_to_right_direction:
-                        profile.start, profile.end = profile.end, profile.start
+                        new_profile.start, new_profile.end = new_profile.end, new_profile.start
 
-                    element.profiles.append(profile)
+                    single_element.profiles.append(new_profile)
 
-    elements, bad_elements = Verification.valid_or_invalid_elements(elements)
+    elements, bad_elements = verification.valid_or_invalid_elements(elements)
 
     if len(bad_elements) > 0:
         print('\nBad elements:')
-        for element in bad_elements:
-            print(element.guid)
+        for single_element in bad_elements:
+            print(single_element.guid)
         print()
 
     # After creation of element objects, profiles are split into element planes (necessary for corner elements)
@@ -93,14 +92,14 @@ def read_csv(file_path):
     print(f'Read {len(elements)} elements from file')
     print('Working...')
     i = 0
-    for element in elements:
+    for single_element in elements:
 
-        Element.assign_delivery_number(element)
+        element_module.assign_delivery_number(single_element)
 
         i += 1
         # print(i, element.guid)
-        element.generate_planes()
-        for plane in element.element_planes:
+        single_element.generate_planes()
+        for plane in single_element.element_planes:
             plane.generate_size()
     print('Planes Generated')
     print('Working...')

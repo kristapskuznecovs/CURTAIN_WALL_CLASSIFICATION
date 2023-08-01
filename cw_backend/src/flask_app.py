@@ -5,13 +5,13 @@ from flask import send_from_directory
 import os
 import logging
 
-from cw_backend.ReadMethods import ProcessFile
-import Settings
+from cw_backend.src.read_file import process_file
+import settings
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS support
 
-results = ProcessFile.results  # Store the results
+results = process_file.results  # Store the results
 
 current_dir = ''
 
@@ -43,7 +43,7 @@ def upload_file():
         file = request.files['file']
 
         # Construct the relative path to the 'node_input' directory
-        node_input_dir = os.path.join(current_dir, 'node_input')
+        node_input_dir = os.path.join(current_dir, '../data/node_input')
 
         # Create the 'node_input' directory if it doesn't exist
         if not os.path.exists(node_input_dir):
@@ -82,7 +82,7 @@ def download_file(folder, filename):
 
 @app.route('/api/download/filelist', methods=['GET'])
 def get_file_names():
-    output_folder = os.path.join(current_dir, 'Output')
+    output_folder = os.path.join(current_dir, '../data/Output')
 
     filename_list = []
     for filename in os.listdir(output_folder):
@@ -112,7 +112,7 @@ def run_process_file(filename):
     }
     # Trigger the processing logic
     try:
-        file_processed = ProcessFile.process_files(filename)
+        file_processed = process_file.process_files(filename)
         if file_processed:
             response['result'] = 'File Processed successfully'
 
@@ -130,7 +130,7 @@ def run_process_file(filename):
 @app.route('/api/settings/<settings>', methods=['POST'])
 def set_settings(settings):
     try:
-        Settings.settings = settings
+        settings.settings = settings
         return True
     except Exception as e:
         traceback.print_exc()

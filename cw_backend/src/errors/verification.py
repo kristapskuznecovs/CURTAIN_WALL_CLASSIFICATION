@@ -1,3 +1,6 @@
+from cw_backend.src.errors import create_missing_data_folders
+
+
 def correct_amount_of_beams(element):
     if len(element.profiles) < 4:
         return False
@@ -25,3 +28,7 @@ def valid_or_invalid_elements(elements):
             bad_elements.append(element)
 
     return elements, bad_elements
+
+
+def check_data_folders(backend_directory, settings):
+    create_missing_data_folders.create_missing_data_folders(backend_directory, settings)

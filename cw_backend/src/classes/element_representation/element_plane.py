@@ -1,11 +1,10 @@
 import math
 
-from ..Element import Opening
-from ..Element import Profile
-from ..Other import Geometry
-from ... import Settings
+from cw_backend.src.classes.element_representation import opening, profile
+from cw_backend.src.classes.other import geometry
+from cw_backend.src import settings
 
-tolerance = Settings.settings["profile_end_tolerance"]
+tolerance = settings.settings["profile_end_tolerance"]
 
 
 class ElementPlane:
@@ -29,9 +28,9 @@ class ElementPlane:
         height = self.height
         width = self.width
 
-        for profile in self.all_profiles:
-            horizontal = max(profile.start.x, profile.end.x)
-            vertical = max(profile.start.y, profile.end.y)
+        for beam in self.all_profiles:
+            horizontal = max(beam.start.x, beam.end.x)
+            vertical = max(beam.start.y, beam.end.y)
 
             if vertical > height:
                 height = vertical
@@ -43,26 +42,26 @@ class ElementPlane:
 
     def generate_openings(self):
         profiles = self.all_profiles[:]
-        opening = Opening.Opening(self.height, self.width, Geometry.Point(0, 0, 0), self.all_profiles, self.plane,
-                                  level=0)
-        self.opening = opening
-        opening.top = Profile.find_h_profile_at_y_pos(self.height, profiles, tolerance)
-        opening.bottom = Profile.find_h_profile_at_y_pos(0, profiles, tolerance)
-        opening.left = Profile.find_v_profile_at_x_pos(0, profiles, tolerance)
-        opening.right = Profile.find_v_profile_at_x_pos(self.width, profiles, tolerance)
+        new_opening = opening.Opening(self.height, self.width, geometry.Point(0, 0, 0), self.all_profiles, self.plane,
+                                      level=0)
+        self.opening = new_opening
+        new_opening.top = profile.find_h_profile_at_y_pos(self.height, profiles, tolerance)
+        new_opening.bottom = profile.find_h_profile_at_y_pos(0, profiles, tolerance)
+        new_opening.left = profile.find_v_profile_at_x_pos(0, profiles, tolerance)
+        new_opening.right = profile.find_v_profile_at_x_pos(self.width, profiles, tolerance)
 
-        if opening.top is not None:
-            profiles.remove(opening.top)
-        if opening.bottom is not None:
-            profiles.remove(opening.bottom)
-        if opening.left is not None:
-            profiles.remove(opening.left)
-        if opening.right is not None:
-            profiles.remove(opening.right)
+        if new_opening.top is not None:
+            profiles.remove(new_opening.top)
+        if new_opening.bottom is not None:
+            profiles.remove(new_opening.bottom)
+        if new_opening.left is not None:
+            profiles.remove(new_opening.left)
+        if new_opening.right is not None:
+            profiles.remove(new_opening.right)
 
-        opening.profiles_inside = profiles
+        new_opening.profiles_inside = profiles
         level = 1
-        Opening.recursion_split_openings(opening, profiles, level)
+        opening.recursion_split_openings(new_opening, profiles, level)
 
 
 def generate_plane_from_bottom_beam(bottom_beam, all_profiles):
@@ -76,7 +75,7 @@ def generate_plane_from_bottom_beam(bottom_beam, all_profiles):
     y1 = end.y
     z1 = end.z
 
-    x_vector = Geometry.Vector(x1 - x0, y1 - y0, z1 - z0)
+    x_vector = geometry.Vector(x1 - x0, y1 - y0, z1 - z0)
 
     vertical_profile = find_most_vertical_profile(all_profiles)
 
@@ -98,15 +97,15 @@ def generate_plane_from_bottom_beam(bottom_beam, all_profiles):
     v_y1 = v_end.y
     v_z1 = v_end.z
 
-    y_vector = Geometry.Vector(v_x1 - v_x0, v_y1 - v_y0, v_z1 - v_z0)
+    y_vector = geometry.Vector(v_x1 - v_x0, v_y1 - v_y0, v_z1 - v_z0)
 
-    return Geometry.Plane(origin, x_vector, y_vector)
+    return geometry.Plane(origin, x_vector, y_vector)
 
 
 def find_most_vertical_profile(all_profiles):
-    def get_ratio(profile):
-        start = profile.start
-        end = profile.end
+    def get_ratio(beam):
+        start = beam.start
+        end = beam.end
 
         dif_x = end.x - start.x
         dif_y = end.y - start.y
@@ -116,19 +115,19 @@ def find_most_vertical_profile(all_profiles):
         if horizontal < 1:
             horizontal = 1
         vertical = dif_z
-        ratio = vertical / horizontal
+        profile_ratio = vertical / horizontal
 
-        return ratio
+        return profile_ratio
 
     vertical_profile = all_profiles[0]
     ratio = get_ratio(vertical_profile)
 
-    for profile in all_profiles[1:]:
-        temp_ratio = get_ratio(profile)
+    for single_profile in all_profiles[1:]:
+        temp_ratio = get_ratio(single_profile)
 
         if temp_ratio > ratio:
             ratio = temp_ratio
-            vertical_profile = profile
+            vertical_profile = single_profile
     return vertical_profile
 
 
@@ -136,18 +135,18 @@ def sort_profiles_by_planes(bottom_profiles, all_profiles):
     result = []
     for _ in bottom_profiles:
         result.append([])
-    for profile in all_profiles:
+    for single_profile in all_profiles:
         if len(bottom_profiles) == 1:
-            result[0].append(profile)
+            result[0].append(single_profile)
             continue
 
         if len(bottom_profiles) == 2:
 
             first = bottom_profiles[0]
 
-            distance1, closest_point1 = Geometry.distance_point_to_line(profile.middle_point, first)
-            closest_point1 = Geometry.Point(closest_point1[0], closest_point1[1], closest_point1[2])
-            distance_to_start = Geometry.distance_2pt(closest_point1, first.start)
+            distance1, closest_point1 = geometry.distance_point_to_line(single_profile.middle_point, first)
+            closest_point1 = geometry.Point(closest_point1[0], closest_point1[1], closest_point1[2])
+            distance_to_start = geometry.distance_2pt(closest_point1, first.start)
             if distance_to_start < first.length + 10:
                 within_first = True
             else:
@@ -155,9 +154,9 @@ def sort_profiles_by_planes(bottom_profiles, all_profiles):
 
             second = bottom_profiles[1]
 
-            distance2, closest_point2 = Geometry.distance_point_to_line(profile.middle_point, second)
-            closest_point2 = Geometry.Point(closest_point2[0], closest_point2[1], closest_point2[2])
-            distance_to_end = Geometry.distance_2pt(closest_point2, second.end)
+            distance2, closest_point2 = geometry.distance_point_to_line(single_profile.middle_point, second)
+            closest_point2 = geometry.Point(closest_point2[0], closest_point2[1], closest_point2[2])
+            distance_to_end = geometry.distance_2pt(closest_point2, second.end)
 
             if distance_to_end < second.length + 10:
                 within_second = True
@@ -165,17 +164,17 @@ def sort_profiles_by_planes(bottom_profiles, all_profiles):
                 within_second = False
 
             if within_first and not within_second:
-                result[0].append(profile)
+                result[0].append(single_profile)
                 continue
 
             elif not within_first and within_second:
-                result[1].append(profile)
+                result[1].append(single_profile)
                 continue
 
             else:
                 if distance1 < distance2:
-                    result[0].append(profile)
+                    result[0].append(single_profile)
                     continue
                 else:
-                    result[1].append(profile)
+                    result[1].append(single_profile)
     return result

@@ -1,4 +1,4 @@
-from ..Other import Geometry
+from cw_backend.src.classes.other import geometry
 
 
 class Profile:
@@ -6,10 +6,10 @@ class Profile:
         self.profile = profile
         self.length = length
         self.guid = guid
-        self.start = Geometry.Point(start_x, start_y, start_z)
-        self.global_start = Geometry.Point(start_x, start_y, start_z)
-        self.end = Geometry.Point(end_x, end_y, end_z)
-        self.global_end = Geometry.Point(end_x, end_y, end_z)
+        self.start = geometry.Point(start_x, start_y, start_z)
+        self.global_start = geometry.Point(start_x, start_y, start_z)
+        self.end = geometry.Point(end_x, end_y, end_z)
+        self.global_end = geometry.Point(end_x, end_y, end_z)
         self.direction = self.get_direction()
         self.delivery_number = delivery_number
 
@@ -53,7 +53,7 @@ class Profile:
         middle_x = self.start.x + (self.end.x - self.start.x) / 2
         middle_y = self.start.y + (self.end.y - self.start.y) / 2
         middle_z = self.start.z + (self.end.z - self.start.z) / 2
-        return Geometry.Point(middle_x, middle_y, middle_z)
+        return geometry.Point(middle_x, middle_y, middle_z)
 
 
 def find_h_profile_at_y_pos(y_pos, all_profiles, tolerance=50):
@@ -96,8 +96,8 @@ def sort_bottom_profiles(bottom_profiles):
         first = bottom_profiles[0]
         second = bottom_profiles[1]
 
-        distance1 = Geometry.distance_2pt(first.end, second.start)
-        distance2 = Geometry.distance_2pt(second.end, first.start)
+        distance1 = geometry.distance_2pt(first.end, second.start)
+        distance2 = geometry.distance_2pt(second.end, first.start)
 
         if distance2 < distance1:
             bottom_profiles.reverse()
