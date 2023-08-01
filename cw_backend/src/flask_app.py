@@ -42,11 +42,14 @@ def upload_file():
         # Access the uploaded file
         file = request.files['file']
 
+        node_input = settings.settings['node_input']
+
         # Construct the relative path to the 'node_input' directory
-        node_input_dir = os.path.join(current_dir, '../data/node_input')
+        node_input_dir = os.path.join(current_dir, 'data', node_input)
 
         # Create the 'node_input' directory if it doesn't exist
         if not os.path.exists(node_input_dir):
+            print(f'Created {node_input} directory')
             os.makedirs(node_input_dir)
 
         # Save the file to the 'node_input' directory
@@ -76,13 +79,14 @@ def upload_file():
 
 @app.route('/api/download/<folder>/<filename>', methods=['GET'])
 def download_file(folder, filename):
-    output_folder = os.path.join(current_dir, folder)
+    output_folder = os.path.join(current_dir, 'data', folder)
     return send_from_directory(output_folder, filename)
 
 
 @app.route('/api/download/filelist', methods=['GET'])
 def get_file_names():
-    output_folder = os.path.join(current_dir, '../data/Output')
+    output_folder = settings.settings['output_folder']
+    output_folder = os.path.join(current_dir, 'data', output_folder)
 
     filename_list = []
     for filename in os.listdir(output_folder):
@@ -93,7 +97,7 @@ def get_file_names():
 
 @app.route('/api/delete/<folder>/<filename>', methods=['DELETE'])
 def delete_file(folder, filename):
-    path = os.path.join(current_dir, folder, filename)
+    path = os.path.join(current_dir, 'data', folder, filename)
     if os.path.isfile(path):
         try:
             os.remove(path)
