@@ -92,7 +92,7 @@ def get_file_names():
     for filename in os.listdir(output_folder):
         if os.path.isfile(os.path.join(output_folder, filename)):
             filename_list.append(filename)
-    return filename_list
+    return {"file_list": filename_list}
 
 
 @app.route('/api/delete/<folder>/<filename>', methods=['DELETE'])
