@@ -12,7 +12,7 @@ import './Text.css'
 const DropZoneContainer = styled.div`
 margin-top: 16px;  
 margin-bottom: 16px;
-border: 1px solid #ccc;
+/*border: 1px solid #ccc;*/
 `;
 
 const ButtonContainer = styled.div`
@@ -21,13 +21,13 @@ margin-bottom: 16px;
 display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid #ccc;
+  /*border: 1px solid #ccc;*/
 `;
 
 const ListContainer = styled.div`
 margin-top: 16px  
 margin-bottom: 16px;
-border: 1px solid #ccc;
+/*border: 1px solid #ccc;*/
 `;
 
 const ClassificationPage = ({ showAlert }) => {
