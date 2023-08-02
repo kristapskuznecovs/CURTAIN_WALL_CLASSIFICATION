@@ -5,8 +5,8 @@ from flask import send_from_directory
 import os
 import logging
 
-from cw_backend.src.read_file import process_file
-import settings
+from .read_file import process_file
+from . import settings
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS support

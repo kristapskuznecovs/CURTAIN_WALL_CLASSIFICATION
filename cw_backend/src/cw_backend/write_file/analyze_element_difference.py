@@ -1,5 +1,6 @@
-from cw_backend.src.write_file import analyze_jsons, write_json
-from cw_backend.src import settings
+from . import analyze_jsons
+from . import write_json
+from .. import settings
 
 import os
 import json
