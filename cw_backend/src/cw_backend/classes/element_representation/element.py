@@ -1,5 +1,5 @@
-from cw_backend.src.classes.other import geometry
-from cw_backend.src.classes.element_representation import profile, element_plane
+from ..other import geometry
+from . import profile, element_plane
 
 
 # element_representation objects are first created as "dumb" objects only containing GUID, and added profiles to the
