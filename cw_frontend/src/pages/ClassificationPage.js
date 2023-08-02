@@ -5,7 +5,6 @@ import PageLayout from '../components/PageLayout';
 import DropZone from '../components/DropZone';
 import ToastUpload from '../components/ToastUpload';
 import ButtonUpload from '../components/ButtonUpload';
-import ButtonDownload from '../components/ButtonDownload';
 import ListDownload from '../components/ListDownload';
 import './Text.css'
 
@@ -73,7 +72,6 @@ const ClassificationPage = ({ showAlert }) => {
             handleFileUploadSuccess={handleFileUploadSuccess}
             selectedFiles={selectedFiles}
           />
-          <ButtonDownload/>
         </ButtonContainer>
         <ListContainer>
         <Heading>Failu saraksts</Heading>

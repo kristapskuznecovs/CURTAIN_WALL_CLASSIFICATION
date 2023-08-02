@@ -5,6 +5,7 @@ import './Buttons.css';
 
 const ButtonUpload = ({ selectedFiles }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleUpload = useCallback(async (formData) => {
     try {
@@ -60,10 +61,11 @@ const ButtonUpload = ({ selectedFiles }) => {
   return (
     <button
       type="button"
-      className="button"
+      className={`button ${isUploading ? 'button-disabled' : ''}`} // Add the button-disabled class when isUploading is true
       onClick={handleButtonClick}
+      disabled={isUploading} // Disable the button when isUploading is true
     >
-      Upload
+      {isUploading ? 'Apstrādā...' : 'Augšupielādēt'}
     </button>
   );
 };

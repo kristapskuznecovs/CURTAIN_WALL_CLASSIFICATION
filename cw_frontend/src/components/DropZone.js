@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { useDropzone } from 'react-dropzone';
+import { useDropzone } from 'react-dropzone'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './DropZone.css';
 import './Buttons.css'
