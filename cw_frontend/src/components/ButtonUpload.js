@@ -9,7 +9,7 @@ const ButtonUpload = ({ selectedFiles }) => {
 
   const handleUpload = useCallback(async (formData) => {
     try {
-      const response = await axios.post('http://127.0.0.1:5000/api/upload', formData, {
+      const response = await axios.post('http://192.168.20.195:5000/api/upload', formData, {
         onUploadProgress: (progressEvent) => {
           const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
           setUploadProgress(progress);
@@ -33,7 +33,7 @@ const ButtonUpload = ({ selectedFiles }) => {
   const triggerProcessing = async (filename) => {
     try {
       // Call the API to trigger the file processing for the uploaded file
-      const response = await axios.get(`http://127.0.0.1:5000/api/process/${filename}`);
+      const response = await axios.get(`http://192.168.20.195/api/process/${filename}`);
       // You can handle the response here if needed
       console.log('File processing response:', response.data);
     } catch (error) {
