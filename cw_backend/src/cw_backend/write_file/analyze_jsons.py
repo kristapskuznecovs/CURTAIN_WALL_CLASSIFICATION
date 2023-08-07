@@ -2,10 +2,7 @@ import os
 import json
 import csv
 from itertools import zip_longest
-import logging
-
-# Set up logging configuration
-logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - %(message)s')
+from .. import settings
 
 
 def get_type_count(option1_list):
@@ -83,7 +80,10 @@ def get_opening_string_option1(opening):
         result += get_opening_string_option1(children)
 
     if len(opening["CHILDREN"]) == 0:
-        result += opening["TYPE"]
+        opening_type = opening["TYPE"]
+        if opening_type == None:
+            opening_type = '-'
+        result += opening_type
     result += '] '
     return result
 
@@ -106,7 +106,9 @@ def generate_output_openings(output_folder, json_folder):
     path = json_folder
     file_names = get_file_names(path)
 
-    with open(output_folder + '\output_openings.csv', 'w', newline='') as file:
+    output_openings_file_path = os.path.join(output_folder, "output_openings.csv")
+
+    with open(output_openings_file_path, 'w', newline='') as file:
 
         writer = csv.writer(file, delimiter=';')
         writer.writerow(['TYPE', 'TOP', 'BOTTOM', 'LEFT', 'RIGHT', 'ORIGIN', 'X_VECTOR', 'Y_VECTOR', 'HEIGHT', 'WIDTH'])
@@ -160,8 +162,6 @@ def get_opening_row_array(opening, result):
             y_vector = location_dict['Y_VECTOR']
         except KeyError:
 
-            logging.debug(f'No Location: {opening}')
-
             origin = None
             x_vector = None
             y_vector = None
@@ -179,17 +179,20 @@ def get_opening_row_array(opening, result):
 
 def get_type_usage(opening, type_count):
     if len(opening["CHILDREN"]) == 0:
-        type = opening["TYPE"]
-        if type not in type_count:
-            type_count[type] = 1
+        opening_type = opening["TYPE"]
+        if opening_type is None:
+            opening_type = '-'
+        if opening_type not in type_count:
+            type_count[opening_type] = 1
         else:
-            type_count[type] += 1
+            type_count[opening_type] += 1
     else:
         for child in opening["CHILDREN"]:
             get_type_usage(child, type_count)
 
 
 def get_option_descriptions(json_folder):
+    rounding = settings.settings["rounding_precision_for_grouping"]
     file_names = get_file_names(json_folder)
     option_descriptions = []
 
@@ -199,8 +202,6 @@ def get_option_descriptions(json_folder):
 
         file_path = os.path.join(json_folder, file_name)
 
-        opening_type_count = {}
-
         with open(file_path) as f:
             data = json.load(f)
         guid = data['GUID']
@@ -209,7 +210,7 @@ def get_option_descriptions(json_folder):
 
         opening_type_count = {}
 
-        string_option2 = f"{data['HEIGHT']} x {data['WIDTH']}"
+        string_option2 = f"{round(data['HEIGHT'], rounding)} x {round(data['WIDTH'], rounding)}"
 
         string_option1 = ''
         i = 0
@@ -220,10 +221,10 @@ def get_option_descriptions(json_folder):
 
             get_type_usage(opening, opening_type_count)
 
-            try:
-                string_option1 += get_opening_string_option1(opening)
-            except:
-                print(f'There are problems with generating string option1 for {guid}')
+            # try:
+            string_option1 += get_opening_string_option1(opening)
+            # except:
+            #     print(f'There are problems with generating string option1 for {guid}')
 
         type_count_string = ''
         keys = opening_type_count.keys()
@@ -231,7 +232,7 @@ def get_option_descriptions(json_folder):
             if key == '':
                 type_count_string += f'{opening_type_count[key]}{"-"} '
             else:
-                type_count_string += f'{opening_type_count[key]}{key} '
+                type_count_string += f'{opening_type_count[key]} x {key} '
 
         string_option1 = f'{type_count_string}{string_option1}'
 
@@ -242,7 +243,8 @@ def get_option_descriptions(json_folder):
 
 
 def generate_output_grouping(option_descriptions, types, output_folder):
-    with open(output_folder + '\output_grouping.csv', 'w', newline='', encoding='UTF8') as file:
+    output_grouping_file_path = os.path.join(output_folder, "output_grouping.csv")
+    with open(output_grouping_file_path, 'w', newline='', encoding='UTF8') as file:
         writer = csv.writer(file, delimiter=';')
 
         writer.writerow(["NAME", "Option 1", "Option 1 description", "Option 2", "Option 2 Description"])
@@ -261,7 +263,8 @@ def generate_output_grouping(option_descriptions, types, output_folder):
 
 
 def generate_output_group_statistics(output_folder, types):
-    with open(output_folder + '\group_statistics.csv', 'w', newline='', encoding='UTF8') as file:
+    group_statistics_file_path = os.path.join(output_folder, "group_statistics.csv")
+    with open(group_statistics_file_path, 'w', newline='', encoding='UTF8') as file:
         writer = csv.writer(file, delimiter=';')
 
         writer.writerow(["TYPE", "TOTAL COUNT", "SPLIT INTO"])

@@ -104,8 +104,6 @@ def write_json(element, json_folder):
         for child_opening in opening.children:
             opening_dict["CHILDREN"].append(get_children_data(child_opening))
 
-
-
         plane_dict["OPENING"] = opening_dict
 
         planes.append(plane_dict)
@@ -124,7 +122,8 @@ def write_json(element, json_folder):
     json_data = json.dumps(data, indent=4)
 
     # create a new file and write the JSON data to it
-    file_path = json_folder + '/' + guid + '.json'
+    file_name = guid + '.json'
+    file_path = os.path.join(json_folder, file_name)
 
     with open(file_path, "w") as file:
         file.write(json_data)
