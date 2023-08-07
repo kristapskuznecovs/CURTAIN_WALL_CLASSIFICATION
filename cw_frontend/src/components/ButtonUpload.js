@@ -9,7 +9,7 @@ const ButtonUpload = ({ selectedFiles }) => {
 
   const handleUpload = useCallback(async (formData) => {
     try {
-      const response = await axios.post('http://192.168.20.195:5000/api/upload', formData, {
+      const response = await axios.post('http://192.168.20.195/api/upload', formData, {
         onUploadProgress: (progressEvent) => {
           const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
           setUploadProgress(progress);
