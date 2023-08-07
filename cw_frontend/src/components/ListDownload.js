@@ -13,7 +13,7 @@ const ListDownload = () => {
 
   const fetchFileList = async () => {
     try {
-      const response = await axios.get('http://192.168.20.195/api/download/filelist');
+      const response = await axios.get('http://classification.upb.lv/api/download/filelist');
       const data = response.data;
       const fileListArray = data.file_list;
       setFileList(fileListArray);
@@ -29,7 +29,7 @@ const ListDownload = () => {
 
   const handleDownload = (filename) => {
     // Replace 'default' with the appropriate folder name if needed
-    window.location.href = `http://192.168.20.195/api/download/output/${filename}`;
+    window.location.href = `http://classification.upb.lv/api/download/output/${filename}`;
   };
 
   return (
