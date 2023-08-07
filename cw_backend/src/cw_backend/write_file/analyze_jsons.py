@@ -106,7 +106,7 @@ def generate_output_openings(output_folder, json_folder):
     path = json_folder
     file_names = get_file_names(path)
 
-    with open(output_folder + '\output_openings.csv', 'w', newline='') as file:
+    with open(output_folder + '/output_openings.csv', 'w', newline='') as file:
 
         writer = csv.writer(file, delimiter=';')
         writer.writerow(['TYPE', 'TOP', 'BOTTOM', 'LEFT', 'RIGHT', 'ORIGIN', 'X_VECTOR', 'Y_VECTOR', 'HEIGHT', 'WIDTH'])
@@ -242,7 +242,7 @@ def get_option_descriptions(json_folder):
 
 
 def generate_output_grouping(option_descriptions, types, output_folder):
-    with open(output_folder + '\output_grouping.csv', 'w', newline='', encoding='UTF8') as file:
+    with open(output_folder + '/output_grouping.csv', 'w', newline='', encoding='UTF8') as file:
         writer = csv.writer(file, delimiter=';')
 
         writer.writerow(["NAME", "Option 1", "Option 1 description", "Option 2", "Option 2 Description"])
@@ -261,7 +261,7 @@ def generate_output_grouping(option_descriptions, types, output_folder):
 
 
 def generate_output_group_statistics(output_folder, types):
-    with open(output_folder + '\group_statistics.csv', 'w', newline='', encoding='UTF8') as file:
+    with open(output_folder + '/group_statistics.csv', 'w', newline='', encoding='UTF8') as file:
         writer = csv.writer(file, delimiter=';')
 
         writer.writerow(["TYPE", "TOTAL COUNT", "SPLIT INTO"])
