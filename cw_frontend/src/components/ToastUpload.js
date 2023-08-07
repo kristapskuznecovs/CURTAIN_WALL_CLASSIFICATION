@@ -1,5 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Toast } from 'bootstrap';
+import React, { useRef, useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleStop, faTrashCan, faChevronUp, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
@@ -7,7 +6,13 @@ import './ToastUpload.css';
 
 const ToastUpload = ({ show, progress, selectedFiles, handleFileRemove }) => {
   const [isMinimized, setIsMinimized] = useState(false);
+  const [shouldShow, setShouldShow] = useState(show);
   const toastRef = useRef(null);
+
+  useEffect(() => {
+    // Update the shouldShow state based on the selectedFiles length
+    setShouldShow(selectedFiles.length > 0);
+  }, [selectedFiles]);
 
   const handleMinimize = () => {
     setIsMinimized(true);
@@ -40,8 +45,8 @@ const ToastUpload = ({ show, progress, selectedFiles, handleFileRemove }) => {
   };
 
   return (
-    <div>
-      <div className={`toast ${show ? 'show' : ''} ${isMinimized ? 'minimized' : ''}`} ref={toastRef} role="alert" aria-live="assertive" aria-atomic="true">
+      <div>
+        <div className={`toast ${shouldShow ? 'show' : ''} ${isMinimized ? 'minimized' : ''}`} ref={toastRef} role="alert" aria-live="assertive" aria-atomic="true">
         <div className="toast-header bg-light">
         <strong className="me-auto">Pievienoti {selectedFiles.length} faili </strong>
           <div className="button-group">

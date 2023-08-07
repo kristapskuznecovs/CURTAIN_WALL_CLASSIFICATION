@@ -5,10 +5,11 @@ import './Buttons.css';
 
 const ButtonUpload = ({ selectedFiles }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleUpload = useCallback(async (formData) => {
     try {
-      const response = await axios.post('http://127.0.0.1:5000/api/upload', formData, {
+      const response = await axios.post('http://classification.upb.lv/api/upload', formData, {
         onUploadProgress: (progressEvent) => {
           const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
           setUploadProgress(progress);
@@ -32,7 +33,7 @@ const ButtonUpload = ({ selectedFiles }) => {
   const triggerProcessing = async (filename) => {
     try {
       // Call the API to trigger the file processing for the uploaded file
-      const response = await axios.get(`http://127.0.0.1:5000/api/process/${filename}`);
+      const response = await axios.get(`http://classification.upb.lv/api/process/${filename}`);
       // You can handle the response here if needed
       console.log('File processing response:', response.data);
     } catch (error) {
@@ -60,10 +61,11 @@ const ButtonUpload = ({ selectedFiles }) => {
   return (
     <button
       type="button"
-      className="button"
+      className={`button ${isUploading ? 'button-disabled' : ''}`} // Add the button-disabled class when isUploading is true
       onClick={handleButtonClick}
+      disabled={isUploading} // Disable the button when isUploading is true
     >
-      Upload
+      {isUploading ? 'Apstrādā...' : 'Augšupielādēt'}
     </button>
   );
 };
