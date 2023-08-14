@@ -1,4 +1,6 @@
 import csv
+from tqdm import tqdm
+
 from ..classes.element_representation import profile as profile_module
 from ..classes.element_representation import element as element_module
 from ..errors import verification, error_handling
@@ -82,27 +84,17 @@ def read_csv(file_path):
 
     elements, bad_elements = verification.valid_or_invalid_elements(elements)
 
-    if len(bad_elements) > 0:
-        print('\nBad elements:')
-        for single_element in bad_elements:
-            print(single_element.guid)
-        print()
-
     # After creation of element objects, profiles are split into element planes (necessary for corner elements)
 
     print(f'Read {len(elements)} elements from file')
-    print('Working...')
     i = 0
-    for single_element in elements:
 
+    print('Generating planes')
+    for single_element in tqdm(elements):
         element_module.assign_delivery_number(single_element)
-
         i += 1
-        # print(i, element.guid)
         single_element.generate_planes()
         for plane in single_element.element_planes:
             plane.generate_size()
-    print('Planes Generated')
-    print('Working...')
 
-    return elements
+    return elements, bad_elements

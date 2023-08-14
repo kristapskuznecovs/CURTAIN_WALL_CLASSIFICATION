@@ -1,30 +1,47 @@
-def get_point_cloud_array(opening_report):
+from . import read_openings_csv
+from ..classes.other import geometry
+
+
+def get_physical_opening_data_tree(opening_report, good_elements, bad_elements):
     # Get point cloud from Opening Report
-    point_cloud = ReadOpeningCSVData.read_point_cloud_csv(opening_report)
-    print(f'From point cloud read {len(point_cloud)} items')
+    openings = read_openings_csv.read_opening_csv(opening_report)
+    print(f'From report read {len(openings)} items')
 
-    sorted_point_cloud = sorted(point_cloud, key=lambda point: Geometry.distance_to_zero(point))
+    elements = good_elements + bad_elements
+    elements_by_guid = {}
 
-    print(f'From point cloud sorted {len(sorted_point_cloud)} items')
-    point_cloud_array = []
+    for element in elements:
+        elements_by_guid[element.guid] = element
+
+    openings_not_assigned_to_element = []
+    for opening in openings:
+        if opening.assembly_guid in elements_by_guid:
+            elements_by_guid[opening.assembly_guid].physical_openings.append(opening)
+        else:
+            openings_not_assigned_to_element.append(opening)
+
+    sorted_not_assigned_openings = sorted(openings_not_assigned_to_element, key=lambda opening: geometry.distance_to_zero(opening.center))
+
+    opening_data_tree = {0: []}
 
     i = 0
 
-    while len(sorted_point_cloud) > 1:
+    while len(sorted_not_assigned_openings) > 1:
         i += 1000
         current_list = []
-        # print(len(sorted_point_cloud))
+        opening_data_tree[i] = current_list
         while True:
-            if len(sorted_point_cloud) == 0:
+            if len(sorted_not_assigned_openings) == 0:
                 break
-            if Geometry.distance_to_zero(sorted_point_cloud[0]) < i:
-                current_list.append(sorted_point_cloud.pop(0))
+            if geometry.distance_to_zero(sorted_not_assigned_openings[0].center) < i:
+                current_list.append(sorted_not_assigned_openings.pop(0))
             else:
                 break
-        point_cloud_array.append(current_list)
-    point_cloud_array.append([])
-    point_cloud_array.append([])
+
+    opening_data_tree[i + 1000] = []
+
+    opening_data_tree["max"] = i + 1000
 
     print('Working...')
 
-    return point_cloud_array
+    return opening_data_tree

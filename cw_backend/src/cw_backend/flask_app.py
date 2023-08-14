@@ -6,6 +6,7 @@ import os
 import logging
 
 from .read_file import process_file
+from .session import current_session as session_module
 from . import settings
 
 app = Flask(__name__)
@@ -15,10 +16,20 @@ results = process_file.results  # Store the results
 
 current_dir = ''
 
+active_session = session_module.current_session
+
 
 def set_current_directory(current_directory):
     global current_dir
     current_dir = current_directory
+
+
+@app.route('/api/resetSession')
+def delete_session():
+    global active_session
+    active_session["id"] = None
+    active_session["time"] = 0
+    return {'result': "Session reset"}
 
 
 @app.route('/')
@@ -31,13 +42,25 @@ def ignore_favicon_request():
     return '', 204  # Return an empty response with a 204 status code (No Content)
 
 
-@app.route('/getResults')
-def get_results():
+@app.route('/getResults/<current_session>')
+def get_results(current_session):
+    id_valid = session_module.session_valid(current_session)
+    if not id_valid:
+        response = {
+            'result': 'There is already an active session'
+        }
+        return response
     return jsonify(results)
 
 
-@app.route('/api/upload', methods=['POST'])
-def upload_file():
+@app.route('/api/upload/<current_session>', methods=['POST'])
+def upload_file(current_session):
+    id_valid = session_module.session_valid(current_session)
+    if not id_valid:
+        response = {
+            'result': 'There is already an active session'
+        }
+        return response
     try:
         # Access the uploaded file
         file = request.files['file']
@@ -77,14 +100,26 @@ def upload_file():
         return jsonify(response), 500
 
 
-@app.route('/api/download/<folder>/<filename>', methods=['GET'])
-def download_file(folder, filename):
+@app.route('/api/download/<folder>/<filename>/<current_session>', methods=['GET'])
+def download_file(folder, filename, current_session):
+    id_valid = session_module.session_valid(current_session)
+    if not id_valid:
+        response = {
+            'result': 'There is already an active session'
+        }
+        return response
     output_folder = os.path.join(current_dir, 'data', folder)
     return send_from_directory(output_folder, filename)
 
 
-@app.route('/api/download/filelist', methods=['GET'])
-def get_file_names():
+@app.route('/api/download/filelist/<current_session>', methods=['GET'])
+def get_file_names(current_session):
+    id_valid = session_module.session_valid(current_session)
+    if not id_valid:
+        response = {
+            'result': 'There is already an active session'
+        }
+        return response
     output_folder = settings.settings['output_folder']
     output_folder = os.path.join(current_dir, 'data', output_folder)
 
@@ -95,8 +130,14 @@ def get_file_names():
     return {"file_list": filename_list}
 
 
-@app.route('/api/delete/<folder>/<filename>', methods=['DELETE'])
-def delete_file(folder, filename):
+@app.route('/api/delete/<folder>/<filename>/<current_session>', methods=['DELETE'])
+def delete_file(folder, filename, current_session):
+    id_valid = session_module.session_valid(current_session)
+    if not id_valid:
+        response = {
+            'result': 'There is already an active session'
+        }
+        return response
     path = os.path.join(current_dir, 'data', folder, filename)
     if os.path.isfile(path):
         try:
@@ -108,8 +149,14 @@ def delete_file(folder, filename):
         return 'File not found'
 
 
-@app.route('/api/process/<filename>', methods=['GET'])
-def run_process_file(filename):
+@app.route('/api/process/<filename>/<current_session>', methods=['GET'])
+def run_process_file(filename, current_session):
+    id_valid = session_module.session_valid(current_session)
+    if not id_valid:
+        response = {
+            'result': 'There is already an active session'
+        }
+        return response
     response = {
         'filename': filename,
         'log': results
@@ -131,8 +178,14 @@ def run_process_file(filename):
     return response
 
 
-@app.route('/api/settings/<settings>', methods=['POST'])
-def set_settings(settings):
+@app.route('/api/settings/<settings>/<current_session>', methods=['POST'])
+def set_settings(settings, current_session):
+    id_valid = session_module.session_valid(current_session)
+    if not id_valid:
+        response = {
+            'result': 'There is already an active session'
+        }
+        return response
     try:
         settings.settings = settings
         return True

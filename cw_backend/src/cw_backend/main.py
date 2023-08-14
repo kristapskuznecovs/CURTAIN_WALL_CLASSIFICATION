@@ -3,7 +3,7 @@ from .read_file import process_file
 from .errors import verification
 from .settings import settings
 from . import flask_app
-
+import time
 
 """
 web - set to True for default use together with React
@@ -12,7 +12,6 @@ web - set to True for default use together with React
 web = True
 
 cw_backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 
 # Check if necessary data folders exist, create them, if not
 verification.check_data_folders(cw_backend_dir, settings)
@@ -23,5 +22,6 @@ if __name__ == '__main__':
     if web:
         flask_app.app.run()
     else:
-        result = process_file.process_files("Geely2.csv")
-        print('Finished')
+        start = time.time()
+        result = process_file.process_files({"files": ["Sickla6.csv", "SicklaOpenings2.csv"]})
+        print('Time spent:', time.time()-start)

@@ -1,7 +1,6 @@
 import os
 import json
 import csv
-from itertools import zip_longest
 from .. import settings
 
 
@@ -15,6 +14,8 @@ def get_type_count(option1_list):
 
     i = 1
     objects = {}
+
+    print('Generating types')
 
     for entry in option1_list:
 
@@ -108,6 +109,8 @@ def generate_output_openings(output_folder, json_folder):
 
     output_openings_file_path = os.path.join(output_folder, "output_openings.csv")
 
+    print('Generating opening report')
+
     with open(output_openings_file_path, 'w', newline='') as file:
 
         writer = csv.writer(file, delimiter=';')
@@ -196,6 +199,8 @@ def get_option_descriptions(json_folder):
     file_names = get_file_names(json_folder)
     option_descriptions = []
 
+    print('Generating descriptions')
+
     for i in range(len(file_names)):
 
         file_name = file_names[i]
@@ -247,6 +252,8 @@ def generate_output_grouping(option_descriptions, types, output_folder):
     with open(output_grouping_file_path, 'w', newline='', encoding='UTF8') as file:
         writer = csv.writer(file, delimiter=';')
 
+        print('Generating element grouping report')
+
         writer.writerow(["NAME", "Option 1", "Option 1 description", "Option 2", "Option 2 Description"])
         for item in option_descriptions:
             name = item["delivery_number"]
@@ -271,9 +278,10 @@ def generate_output_group_statistics(output_folder, types):
 
         keys = types.keys()
 
+        print('Generating statistics')
         for key in keys:
             object = types[key]
-            size_count = [key, object["count"]]
+            size_count = [f'Group {object["key"]} | {key}', object["count"]]
 
             sizes = object["size_count"].keys()
 
@@ -281,6 +289,81 @@ def generate_output_group_statistics(output_folder, types):
                 size_count.append(object["size_count"][size])
 
             writer.writerow(size_count)
+
+
+def flatten_levels(json_object):
+    result = []
+    level_count = len(json_object[0].keys())
+
+    for i in range(1, level_count + 1):
+        level = []
+        for plane in json_object:
+            level += plane[str(i)]
+        result.append(level)
+
+    for i in range(len(result)):
+        result[i] = '|'.join(result[i])
+
+    return result
+
+
+def add_element_to_result_tree(level_flat_information, branch, delivery_number):
+    if len(level_flat_information) == 0:
+        if "ELEMENTS" not in branch:
+            branch["ELEMENTS"] = []
+        branch["ELEMENTS"].append(delivery_number)
+        branch["COUNT"] += 1
+        return True
+
+    key = level_flat_information.pop(0)
+
+    if key not in branch:
+        branch[key] = {"COUNT": 0}
+
+    branch["COUNT"] += 1
+
+    next_branch = branch[key]
+    add_element_to_result_tree(level_flat_information, next_branch, delivery_number)
+
+
+def get_type_tree(output_folder, json_folder):
+    path = json_folder
+    file_names = get_file_names(path)
+    result_file_path = os.path.join(output_folder, "tree.something")
+
+    result_tree = {"PLANE_COUNT": {}}
+
+    for i in range(len(file_names)):
+        file_name = file_names[i]
+        file_path = os.path.join(path, file_name)
+
+        with open(file_path) as f:
+            data = json.load(f)
+
+            plane_count = len(data["LEVELS"])
+            delivery_number = data["DELIVERY_NUMBER"]
+
+            flattened_information = flatten_levels(data["LEVELS"])
+
+            if plane_count not in result_tree["PLANE_COUNT"]:
+                result_tree["PLANE_COUNT"][plane_count] = {"COUNT": 0}
+
+            current_branch = result_tree["PLANE_COUNT"][plane_count]
+
+            add_element_to_result_tree(flattened_information, current_branch, delivery_number)
+
+    json_data = json.dumps(result_tree, indent=4)
+    # create a new file and write the JSON data to it
+    file_name = "similarity" + '.json'
+    file_path = os.path.join(output_folder, file_name)
+
+    # draw_graph.draw_graph(result_tree)
+
+
+    with open(file_path, "w") as file:
+        file.write(json_data)
+
+    return result_tree
 
 
 def analyze_jsons(output_folder, json_folder):
@@ -295,5 +378,7 @@ def analyze_jsons(output_folder, json_folder):
     generate_output_grouping(option_descriptions, types, output_folder)
 
     generate_output_group_statistics(output_folder, types)
+
+    similarity_tree = get_type_tree(output_folder, json_folder)
 
     return types

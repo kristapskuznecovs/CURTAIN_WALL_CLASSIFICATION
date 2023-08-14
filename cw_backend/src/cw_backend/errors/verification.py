@@ -1,8 +1,11 @@
+import math
+
 from . import create_missing_data_folders
 
 
 def correct_amount_of_beams(element):
     if len(element.profiles) < 4:
+        element.error = 'Less than 4 profiles in element'
         return False
     return True
 
@@ -10,6 +13,53 @@ def correct_amount_of_beams(element):
 def any_profile_is_vertical(element):
     for profile in element.profiles:
         if abs(profile.start.z - profile.end.z) > 50:
+            return True
+    element.error = 'No profile is vertical'
+    return False
+
+
+def are_vertical_profiles_in_the_same_xy(profile1, profile2):
+    x1 = profile1.start.x
+    x2 = profile2.start.x
+    if abs(x1 - x2) < 50:
+        return True
+    return False
+
+
+def left_or_right_side_as_single_profile(element):
+    for plane in element.element_planes:
+        profiles = plane.all_profiles
+        opening = plane.opening
+        left = opening.left
+        right = opening.right
+
+        for profile in profiles:
+            if profile.direction == 'V':
+                if left is not None:
+                    if profile.guid != left.guid:
+                        if are_vertical_profiles_in_the_same_xy(profile, left):
+                            element.error = 'Split side profile'
+                            return False
+                if right is not None:
+                    if profile.guid != right.guid:
+                        if are_vertical_profiles_in_the_same_xy(profile, right):
+                            element.error = 'Split side profile'
+                            return False
+    return True
+
+
+
+def any_profile_is_diagonal(element):
+    for profile in element.profiles:
+        x_difference = abs(profile.start.x - profile.end.x)
+        y_difference = abs(profile.start.y - profile.end.y)
+        z_difference = abs(profile.start.z - profile.end.z)
+
+        vertical_difference = z_difference
+        horizontal_difference = math.sqrt(x_difference ** 2 + y_difference ** 2)
+
+        if vertical_difference > 50 and horizontal_difference > 50:
+            element.error = 'Diagonal profile in element'
             return True
     return False
 
@@ -22,8 +72,9 @@ def valid_or_invalid_elements(elements):
     for element in element_list_copy:
         profile_count = correct_amount_of_beams(element)
         vertical = any_profile_is_vertical(element)
+        diagonal = any_profile_is_diagonal(element)
 
-        if not profile_count or not vertical or element.delivery_number in used_delivery_numbers:
+        if not profile_count or not vertical or (element.delivery_number in used_delivery_numbers) or diagonal:
             elements.remove(element)
             bad_elements.append(element)
 

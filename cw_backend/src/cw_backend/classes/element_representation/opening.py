@@ -1,4 +1,5 @@
 import copy
+import numpy as np
 
 from ..other import geometry
 from ... import settings
@@ -31,6 +32,10 @@ class Opening:
         self.local_opening_plane = copy.deepcopy(plane)
 
         self.adjust_plane_origin()
+
+        self.guid = ''
+        self.name = ''
+        self.assembly_guid = ''
 
     def __str__(self):
         return f'Level: {self.level}\n' \
@@ -364,39 +369,115 @@ def recursion_split_openings(father: Opening, inside_profiles, level):
                         continue
                     recursion_split_openings(new_opening, local_inside_profiles, level + 1)
 
-    else:
-        print(f"There are inside profiles that aren't crossing anything!\n{father}")
+
+def keep_openings_with_similar_orientation(plane, openings):
+    x_vector = plane.x_vector.np
+    y_vector = plane.y_vector.np
+    z_vector_np = np.cross(x_vector, y_vector)
+
+    similar_orientation_openings = []
+
+    for opening in openings:
+        plane2 = opening.plane
+        x2_vector = plane2.x_vector.np
+        y2_vector = plane2.y_vector.np
+        z2_vector_np = np.cross(x2_vector, y2_vector)
+
+        dot_product = np.dot(z_vector_np, z2_vector_np)
+
+        magnitude_1 = np.linalg.norm(z_vector_np)
+        magnitude_2 = np.linalg.norm(z2_vector_np)
+
+        angle_rad = np.arccos(dot_product / (magnitude_1 * magnitude_2))
+
+        angle_deg = abs(np.degrees(angle_rad))
+
+        if 0 <= angle_deg <= 5 or 175 <= angle_deg <= 180:
+            similar_orientation_openings.append(opening)
+        else:
+            continue
+    return similar_orientation_openings
 
 
-def assign_opening_type(opening, plane, point_cloud_array):
+def get_ten_closest_openings(center, openings):
+    try:
+        openings = sorted(openings, key=lambda opening: geometry.distance_2pt(center, opening.center))
+    except:
+        test = ''
+    distance = []
+
+    for opening in openings:
+        distance.append(geometry.distance_2pt(center, opening.center))
+    return openings[:10]
+
+
+def get_projected_onto_openings(center, openings):
+    result_openings = []
+
+    for opening in openings:
+        local_point = geometry.get_local_coordinate(center, opening.plane)
+
+        x = local_point.x
+        y = local_point.y
+
+        x_dimension = opening.height
+        y_dimension = opening.width
+
+        if 50 <= x <= x_dimension - 50 and 50 <= y <= y_dimension:
+            result_openings.append(opening)
+
+    return result_openings
+
+
+def find_opening_types_for_plane(plane, physical_opening_data_tree, element_openings):
+    cs_plane = plane.plane
+    center_coordinate = plane.opening.center
+    global_center_coordinate = geometry.get_global_coordinate(center_coordinate, cs_plane)
+
+    opening = plane.opening
+
+    rounded_distance = int(round(geometry.distance_to_zero(global_center_coordinate) / 1000, 0)) * 1000
+
+    max_number = physical_opening_data_tree["max"]
+    numbers = []
+    for i in range(-3, 4):
+        distance = rounded_distance + i * 1000
+        if distance < 0:
+            continue
+        if distance > max_number:
+            continue
+        numbers.append(distance)
+
+    nearby_openings = []
+
+    for index in numbers:
+        nearby_openings += physical_opening_data_tree[index]
+
+    nearby_openings += element_openings
+
+    same_orientation_nearby_openings = keep_openings_with_similar_orientation(cs_plane, nearby_openings)
+
+    assign_opening_type(opening, cs_plane, same_orientation_nearby_openings)
+
+
+def assign_opening_type(opening, plane, same_orientation_nearby_openings):
     if len(opening.children) == 0:
         opening_center_global = geometry.get_global_coordinate(opening.center, plane)
 
-        index = int(round(geometry.distance_to_zero(opening_center_global) / 1000, 0))
-        # print(index)
+        ten_closest_openings_to_opening = get_ten_closest_openings(opening_center_global,
+                                                                   same_orientation_nearby_openings)
 
-        point_cloud = ''
-        try:
-            point_cloud = point_cloud_array[index - 1] + point_cloud_array[index] + point_cloud_array[index + 1]
-        except Exception as e:
-            print(e)
+        # Find within which openings you can project the point
+        final_openings = get_projected_onto_openings(opening_center_global, ten_closest_openings_to_opening)
 
-        if len(point_cloud) == 0:
-            opening.type = None
+        if len(final_openings) > 0:
+            opening_types = []
+            for physical_opening in final_openings:
+                opening_types.append(physical_opening.type)
+            opening_type = '|'.join(opening_types)
+            opening.type = opening_type
         else:
-            closest_point = point_cloud[0]
-            distance = geometry.distance_2pt(opening_center_global, closest_point)
-
-            for point in point_cloud:
-                temp_distance = geometry.distance_2pt(point, opening_center_global)
-                if distance >= temp_distance:
-                    closest_point = point
-                    distance = temp_distance
-
-            if geometry.distance_2pt(closest_point, opening_center_global) < 400:
-                opening.type = closest_point.name
-            else:
-                opening.type = "-"
+            opening.type = None
 
     for opening_child in opening.children:
-        assign_opening_type(opening_child, plane, point_cloud_array)
+        assign_opening_type(opening_child, plane, same_orientation_nearby_openings)

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from ..classes.element_representation.element import get_opening_level
 
 accuracy = 2
 
@@ -20,6 +21,55 @@ def delete_files_in_folder(folder_path):
             os.remove(file_path)
             i += 1
     print(f"Deleted {i} files")
+
+
+def get_level_descriptions(element):
+    def extract_level_information(father_opening, current_level, level_information, max_level):
+
+        if current_level > max_level + 1:
+            return True
+
+        if current_level not in level_information:
+            level_information[current_level] = []
+
+        split_type = father_opening.split_direction
+        children_count = len(father_opening.children)
+
+        if children_count > 0:
+            level_information[current_level].append(f'SPLIT {split_type}{children_count}')
+            for child in father_opening.children:
+                extract_level_information(child, current_level + 1, level_information, max_level)
+
+        else:
+            level_information[current_level].append(f'TYPE {father_opening.type}')
+            for i in range(max_level - current_level):
+                if i + current_level + 1 not in level_information:
+                    level_information[i + current_level + 1] = []
+                level_information[i + current_level + 1].append('-')
+
+    element_level_information = []
+
+    max_level = 0
+    for plane in element.element_planes:
+        opening = plane.opening
+        plane_max_level = get_opening_level(opening, 0)
+        if plane_max_level > max_level:
+            max_level = plane_max_level
+
+    max_level += 1
+
+    for plane in element.element_planes:
+        level = 1
+
+        opening = plane.opening
+
+        plane_level_information = {}
+
+        extract_level_information(opening, level, plane_level_information, max_level)
+
+        element_level_information.append(plane_level_information)
+
+    return element_level_information
 
 
 def write_json(element, json_folder):
@@ -108,13 +158,16 @@ def write_json(element, json_folder):
 
         planes.append(plane_dict)
 
+    levels = get_level_descriptions(element)
+
     data = {
         "GUID": guid,
         "HEIGHT": height,
         "WIDTH": width,
         "PLANE COUNT": plane_count,
         "PLANES": planes,
-        "DELIVERY_NUMBER": delivery_number
+        "DELIVERY_NUMBER": delivery_number,
+        "LEVELS": levels
     }
 
     # serialize the data to JSON format

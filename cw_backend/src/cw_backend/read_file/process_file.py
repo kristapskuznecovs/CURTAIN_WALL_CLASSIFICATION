@@ -8,6 +8,8 @@ from .. import settings
 from ..errors import error_handling
 from ..errors import verification
 from ..read_file import sort_files
+from tqdm import tqdm
+from ..write_file import error_log
 from ..classes.other import geometry
 
 results = {"Errors": error_handling.errors}  # Store the results
@@ -26,36 +28,28 @@ def process_files(filenames):
     global current_dir
 
     output_folder = os.path.join(current_dir, 'data', settings["output_folder"])
-    write_json.delete_files_in_folder(output_folder)
 
-    start = time.time()
+    print('Deleting output files')
+    write_json.delete_files_in_folder(output_folder)
 
     files = sort_files.sort_files(filenames, current_dir)
 
-    print('Files sorted in', time.time() - start)
-
-    start = time.time()
-
     if len(files["unknown_files"]) > 0:
-        print('Duplicate report files')
+        print('Bad report files')
         for file in files["unknown_files"]:
             print(file)
         return False
 
     # Input
     opening_report = files["opening_file"]
-
-    # profile_report = os.path.join(current_dir, 'Aile_Element_Classification', 'node_input', filename)
     profile_report = files["profile_file"]
 
     # Output
     json_folder = os.path.join(current_dir, 'data', settings["json_folder"])
-
     svg_folder = os.path.join(current_dir, 'data', settings["svg_folder"])
     write_jsons = settings["write_jsons"]
     draw_element = settings["draw_element"]
     analyze_json = settings["analyze_json"]
-
     difference_folder = os.path.join(current_dir, 'data', settings["difference_results"])
 
     assign_opening_type = settings["assign_opening_type"]
@@ -67,20 +61,23 @@ def process_files(filenames):
         return False
 
     if assign_opening_type:
-        # Get point cloud from Opening Report
-        opening_data_tree = point_cloud.get_physical_opening_data_tree(opening_report)
+        # Get physical opening list
+        opening_data_tree = point_cloud.get_physical_opening_data_tree(opening_report, elements, bad_elements)
 
-    print('Generating openings, writing')
-    print('Working...')
+
+
+
 
     # Call the function to delete the files
 
+    print('Deleting json files')
     write_json.delete_files_in_folder(json_folder)
+    print('Deleting svg files')
     write_json.delete_files_in_folder(svg_folder)
 
-    print('elements generated in ', time.time() - start)
-
     start = time.time()
+
+
 
     for element in elements:
         # try:
@@ -92,12 +89,11 @@ def process_files(filenames):
             bad_elements.append(element)
             elements.remove(element)
 
-    print('elements verified and openings generated in', time.time() - start)
-
-    for element in elements:
+    print('Assigning opening type, creating svg, json')
+    for element in tqdm(elements):
         for plane in element.element_planes:
             if assign_opening_type:
-                opening.find_opening_types_for_plane(plane, opening_data_tree)
+                opening.find_opening_types_for_plane(plane, opening_data_tree, element.physical_openings)
 
         if draw_element:
             draw_svg.draw_element(element, svg_folder)
@@ -107,8 +103,7 @@ def process_files(filenames):
         # except:
         #     print('Problem', element.guid)
     if analyze_json:
-        print('Analyzing JSONs')
-        print('Working...')
+
         analyze_jsons.analyze_jsons(output_folder, json_folder)
 
         if settings["analyze_differences"]:
@@ -116,12 +111,10 @@ def process_files(filenames):
                                                                                          output_folder,
                                                                                          difference_folder)
 
-        # results[filename] = result  # Store the result using the filename as the key
-        print('Finished')
-
     if len(bad_elements) > 0:
-        print('\nBad Elements:')
-        for element in bad_elements:
-            print(element.guid)
+        print(f'\n{len(bad_elements)} Bad Elements')
+        error_log.write_error_log(bad_elements, output_folder)
+
+    print('Finished')
 
     return True

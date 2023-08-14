@@ -12,6 +12,8 @@ class Element:
         self.element_planes = []
         self.plane_count = 0
         self.delivery_number = ''
+        self.physical_openings = []
+        self.error = ''
 
     def __str__(self):
         return f'{self.guid} | {len(self.profiles)}'
