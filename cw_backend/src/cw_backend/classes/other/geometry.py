@@ -103,7 +103,7 @@ class Plane:
 def get_local_coordinate(point: Point,
                          plane: Plane,
                          origin_x: Vector = Vector(1, 0, 0),
-                         origin_y: Vector = Vector(0, 1, 0), ):
+                         origin_y: Vector = Vector(0, 1, 0)):
     vectors = []
 
     destination_x = plane.x_vector
@@ -201,3 +201,19 @@ def get_global_coordinate(point_local: Point,
 
 def distance_to_zero(point):
     return math.sqrt(point.x ** 2 + point.y ** 2 + point.z ** 2)
+
+
+def angle_between_vectors(vector1, vector2):
+    vector1 = vector1.np
+    vector2 = vector2.np
+
+    dot_product = np.dot(vector1, vector2)
+
+    magnitude_1 = np.linalg.norm(vector1)
+    magnitude_2 = np.linalg.norm(vector2)
+
+    angle_rad = np.arccos(dot_product / (magnitude_1 * magnitude_2))
+
+    angle_deg = abs(np.degrees(angle_rad))
+
+    return angle_deg

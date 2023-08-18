@@ -474,7 +474,9 @@ def assign_opening_type(opening, plane, same_orientation_nearby_openings):
             opening_types = []
             for physical_opening in final_openings:
                 opening_types.append(physical_opening.type)
-            opening_type = '|'.join(opening_types)
+
+            sorted_opening_types = sorted(opening_types)
+            opening_type = '|'.join(sorted_opening_types)
             opening.type = opening_type
         else:
             opening.type = None

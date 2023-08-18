@@ -2,6 +2,7 @@ import os
 import json
 import csv
 from .. import settings
+from . import opening_report
 
 
 def get_type_count(option1_list):
@@ -254,10 +255,11 @@ def generate_output_grouping(option_descriptions, types, output_folder):
 
         print('Generating element grouping report')
 
-        writer.writerow(["NAME", "Option 1", "Option 1 description", "Option 2", "Option 2 Description"])
+        writer.writerow(["NAME", "Opening List", "Option 1", "Option 1 description", "Option 2", "Option 2 Description"])
         for item in option_descriptions:
             name = item["delivery_number"]
             description = item["option1"]
+
             type = f'Group {types[description]["key"]}'
 
             size_description = item["option2"]
@@ -265,7 +267,11 @@ def generate_output_grouping(option_descriptions, types, output_folder):
 
             size_group = f'Group {types[description]["key"]}-{size_type}'
 
-            row = [name, type, description, size_group, size_description]
+            split_description = description.split('P1')
+            opening_list = split_description.pop(0)
+            description = 'P1' + split_description[0]
+
+            row = [name, opening_list, type, description, size_group, size_description]
             writer.writerow(row)
 
 
@@ -366,6 +372,19 @@ def get_type_tree(output_folder, json_folder):
     return result_tree
 
 
+
+def add_bad_elements(bad_elements, output_folder):
+    file_name = "output_grouping.csv"
+    file_path = os.path.join(output_folder, file_name)
+
+    with open(file_path, 'a', newline='', encoding='UTF8') as file:
+        writer = csv.writer(file, delimiter=';')
+
+        for element in bad_elements:
+            delivery_number = element.delivery_number
+            writer.writerow([delivery_number, element.error])
+
+
 def analyze_jsons(output_folder, json_folder):
     # Generate output openings csv report, information used for Engineers
     generate_output_openings(output_folder, json_folder)
@@ -378,6 +397,8 @@ def analyze_jsons(output_folder, json_folder):
     generate_output_grouping(option_descriptions, types, output_folder)
 
     generate_output_group_statistics(output_folder, types)
+
+    opening_report.generate_opening_report(output_folder, json_folder)
 
     similarity_tree = get_type_tree(output_folder, json_folder)
 

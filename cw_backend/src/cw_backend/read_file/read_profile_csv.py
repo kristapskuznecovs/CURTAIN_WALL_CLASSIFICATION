@@ -1,4 +1,5 @@
 import csv
+import traceback
 from tqdm import tqdm
 
 from ..classes.element_representation import profile as profile_module
@@ -84,17 +85,32 @@ def read_csv(file_path):
 
     elements, bad_elements = verification.valid_or_invalid_elements(elements)
 
+    for element in bad_elements:
+        element_module.assign_delivery_number(element)
+
+    delivery_numbers = set()
+    for element in elements+bad_elements:
+        if element.delivery_number in set():
+            print(f'Duplicate {element.delivery_number}')
+        delivery_numbers.add(element.delivery_number)
+
     # After creation of element objects, profiles are split into element planes (necessary for corner elements)
 
     print(f'Read {len(elements)} elements from file')
-    i = 0
 
     print('Generating planes')
-    for single_element in tqdm(elements):
+    for single_element in tqdm(elements[:]):
         element_module.assign_delivery_number(single_element)
-        i += 1
-        single_element.generate_planes()
-        for plane in single_element.element_planes:
-            plane.generate_size()
+        try:
+            single_element.generate_planes()
+            for plane in single_element.element_planes:
+                plane.generate_size()
+        except Exception as e:
+            single_element.error = "Couldn't generate plane"
+            # traceback.print_exc()
+            elements.remove(single_element)
+            bad_elements.append(single_element)
+
+
 
     return elements, bad_elements

@@ -1,4 +1,6 @@
 from ..other import geometry
+import numpy as np
+from ... import settings
 
 
 class Profile:
@@ -101,3 +103,43 @@ def sort_bottom_profiles(bottom_profiles):
 
         if distance2 < distance1:
             bottom_profiles.reverse()
+
+
+def get_profile_vector(profile):
+    start = profile.start
+    end = profile.end
+    vector = geometry.Vector(end.x - start.x, end.y - start.y, end.z - start.z)
+    return vector
+
+
+def adjust_profile_lengths(bottom_profiles):
+    # direction = settings.settings["left_to_right_direction"]
+    first = bottom_profiles[0]
+    second = bottom_profiles[1]
+
+    length_1_points = geometry.distance_2pt(first.start, first.end)
+    length_1_attribute = first.length
+
+    length_2_points = geometry.distance_2pt(second.start, second.end)
+    length_2_attribute = second.length
+
+    if abs(length_1_attribute - length_1_points) > 0.01:
+        vector_1 = get_profile_vector(first).np
+        start = first.start
+        start_point = np.array([start.x, start.y, start.z])
+        second_point = start_point + vector_1 * length_1_attribute
+        first.end = geometry.Point(second_point[0], second_point[1], second_point[2])
+
+    if abs(length_2_attribute - length_2_points) > 0.01:
+        vector_2 = get_profile_vector(second).np
+        start = second.start
+        start_point = np.array([start.x, start.y, start.z])
+
+        length_difference = length_2_points - length_2_attribute
+
+        second_point = start_point + vector_2 * length_1_attribute
+        second.start = geometry.Point(second_point[0], second_point[1], second_point[2])
+
+
+
+

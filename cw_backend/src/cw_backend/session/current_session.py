@@ -10,13 +10,13 @@ def session_valid(session):
     if current_session['id'] is None:
         current_session['id'] = session
         current_session['time'] = time_now
-        return True
+        return True, current_session['id']
     elif session == current_session['id']:
         current_session['time'] = time_now
-        return True
+        return True, current_session['id']
     elif 0 < time_difference < 300:
-        return False
+        return False, current_session['id']
     else:
         current_session['id'] = session
         current_session['time'] = int(time.time())
-        return True
+        return True, current_session['id']

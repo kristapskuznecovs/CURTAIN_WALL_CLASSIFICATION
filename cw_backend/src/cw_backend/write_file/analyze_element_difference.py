@@ -287,16 +287,23 @@ def generate_report_of_similar_but_different_openings(json_folder, output_folder
 
     print(f'Adjust {len(adjust_elements)} elements')
 
-    for tree_object in bad_tree_objects:
-        change_min_max_to_single_value(tree_object, top_level_count=True)
+    if len(bad_tree_objects) > 0:
+        difference_file_path = os.path.join(output_folder, "mistakes.json")
+        with open(difference_file_path, "w") as difference_file:
 
-        json_data = json.dumps(tree_object, indent=4)
+            for tree_object in bad_tree_objects:
+                change_min_max_to_single_value(tree_object, top_level_count=True)
 
-        file_path = f"{difference_folder}" + '/' + str(i) + '.json'
+                json_data = json.dumps(tree_object, indent=4)
 
-        with open(file_path, "w") as file:
-            file.write(json_data)
+                difference_file_data = json.dumps({"CASE": i, "DATA": tree_object}, indent=4)
+                difference_file.write(difference_file_data)
 
-        i += 1
+                file_path = os.path.join(difference_folder, str(i) + '.json')
+
+                with open(file_path, "w") as file:
+                    file.write(json_data)
+
+                i += 1
 
 # generate_report_of_similar_but_different_openings('Results', 'Output')

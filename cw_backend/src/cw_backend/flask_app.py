@@ -44,7 +44,7 @@ def ignore_favicon_request():
 
 @app.route('/getResults/<current_session>')
 def get_results(current_session):
-    id_valid = session_module.session_valid(current_session)
+    id_valid, active_id = session_module.session_valid(current_session)
     if not id_valid:
         response = {
             'result': 'There is already an active session'
@@ -55,10 +55,10 @@ def get_results(current_session):
 
 @app.route('/api/upload/<current_session>', methods=['POST'])
 def upload_file(current_session):
-    id_valid = session_module.session_valid(current_session)
+    id_valid, active_id = session_module.session_valid(current_session)
     if not id_valid:
         response = {
-            'result': 'There is already an active session'
+            'result': f'There is already an active session: {active_id}'
         }
         return response
     try:
@@ -102,10 +102,10 @@ def upload_file(current_session):
 
 @app.route('/api/download/<folder>/<filename>/<current_session>', methods=['GET'])
 def download_file(folder, filename, current_session):
-    id_valid = session_module.session_valid(current_session)
+    id_valid, active_id = session_module.session_valid(current_session)
     if not id_valid:
         response = {
-            'result': 'There is already an active session'
+            'result': f'There is already an active session: {active_id}'
         }
         return response
     output_folder = os.path.join(current_dir, 'data', folder)
@@ -114,10 +114,10 @@ def download_file(folder, filename, current_session):
 
 @app.route('/api/download/filelist/<current_session>', methods=['GET'])
 def get_file_names(current_session):
-    id_valid = session_module.session_valid(current_session)
+    id_valid, active_id = session_module.session_valid(current_session)
     if not id_valid:
         response = {
-            'result': 'There is already an active session'
+            'result': f'There is already an active session: {active_id}'
         }
         return response
     output_folder = settings.settings['output_folder']
@@ -132,10 +132,10 @@ def get_file_names(current_session):
 
 @app.route('/api/delete/<folder>/<filename>/<current_session>', methods=['DELETE'])
 def delete_file(folder, filename, current_session):
-    id_valid = session_module.session_valid(current_session)
+    id_valid, active_id = session_module.session_valid(current_session)
     if not id_valid:
         response = {
-            'result': 'There is already an active session'
+            'result': f'There is already an active session: {active_id}'
         }
         return response
     path = os.path.join(current_dir, 'data', folder, filename)
@@ -151,10 +151,10 @@ def delete_file(folder, filename, current_session):
 
 @app.route('/api/process/<filename>/<current_session>', methods=['GET'])
 def run_process_file(filename, current_session):
-    id_valid = session_module.session_valid(current_session)
+    id_valid, active_id = session_module.session_valid(current_session)
     if not id_valid:
         response = {
-            'result': 'There is already an active session'
+            'result': f'There is already an active session: {active_id}'
         }
         return response
     response = {
@@ -180,10 +180,10 @@ def run_process_file(filename, current_session):
 
 @app.route('/api/settings/<settings>/<current_session>', methods=['POST'])
 def set_settings(settings, current_session):
-    id_valid = session_module.session_valid(current_session)
+    id_valid, active_id = session_module.session_valid(current_session)
     if not id_valid:
         response = {
-            'result': 'There is already an active session'
+            'result': f'There is already an active session: {active_id}'
         }
         return response
     try:

@@ -121,6 +121,7 @@ def find_most_vertical_profile(all_profiles):
         return profile_ratio
 
     vertical_profile = all_profiles[0]
+
     ratio = get_ratio(vertical_profile)
 
     for single_profile in all_profiles[1:]:
@@ -136,12 +137,29 @@ def sort_profiles_by_planes(bottom_profiles, all_profiles):
     result = []
     for _ in bottom_profiles:
         result.append([])
+
+    if len(bottom_profiles) > 1:
+        bottom_profile_vectors = []
+        for single_profile in bottom_profiles:
+            bottom_profile_vectors.append(profile.get_profile_vector(single_profile))
+
     for single_profile in all_profiles:
         if len(bottom_profiles) == 1:
             result[0].append(single_profile)
             continue
 
         if len(bottom_profiles) == 2:
+            if single_profile.direction == 'H':
+                vector = profile.get_profile_vector(single_profile)
+                angle1 = geometry.angle_between_vectors(vector, bottom_profile_vectors[0])
+
+                if angle1 > 177 or angle1 < 3:
+                    result[0].append(single_profile)
+                    continue
+                angle2 = geometry.angle_between_vectors(vector, bottom_profile_vectors[1])
+                if angle2 > 177 or angle2 < 3:
+                    result[1].append(single_profile)
+                    continue
 
             first = bottom_profiles[0]
 

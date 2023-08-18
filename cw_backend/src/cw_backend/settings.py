@@ -1,7 +1,7 @@
 settings = {
     "max_tolerance": 5,
     "min_tolerance": 0.25,
-    "left_to_right_direction": False,
+    "left_to_right_direction": True,
     "profile_end_tolerance": 100,
     "json_folder": 'results',
     "output_folder": 'output',
@@ -10,7 +10,7 @@ settings = {
     "write_jsons": True,
     "draw_element": True,
     "analyze_json": True,
-    "analyze_differences": False,
+    "analyze_differences": True,
     "assign_opening_type": True,
     "node_input": 'node_input',
     "rounding_precision_for_grouping": 0

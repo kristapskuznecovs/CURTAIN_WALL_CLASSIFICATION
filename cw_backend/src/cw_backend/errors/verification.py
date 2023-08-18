@@ -48,7 +48,6 @@ def left_or_right_side_as_single_profile(element):
     return True
 
 
-
 def any_profile_is_diagonal(element):
     for profile in element.profiles:
         x_difference = abs(profile.start.x - profile.end.x)
@@ -83,3 +82,18 @@ def valid_or_invalid_elements(elements):
 
 def check_data_folders(backend_directory, settings):
     create_missing_data_folders.create_missing_data_folders(backend_directory, settings)
+
+
+def check_files(files):
+
+    if len(files["unknown_files"]) > 0:
+        print('Bad report files')
+        for file in files["unknown_files"]:
+            print(file)
+        return False
+
+    if files["profile_file"] is None:
+        print('No profile report file')
+        return False
+
+    return True

@@ -23,6 +23,7 @@ class Element:
 
         if len(bottom_profiles) > 1:
             profile.sort_bottom_profiles(bottom_profiles)
+            profile.adjust_profile_lengths(bottom_profiles)
 
         profiles_by_planes = element_plane.sort_profiles_by_planes(bottom_profiles, self.profiles)
 
@@ -30,6 +31,8 @@ class Element:
         for _ in range(len(profiles_by_planes)):
             bottom_profile = bottom_profiles.pop(0)
             all_profiles_on_plane = profiles_by_planes.pop(0)
+            if len(all_profiles_on_plane) == 0:
+                return False
             self.element_planes.append(element_plane.ElementPlane(bottom_profile, all_profiles_on_plane))
 
         # Orient coordinates to plane local coordinate system
@@ -42,10 +45,14 @@ class Element:
                 single_profile.orient_points()
 
         self.plane_count = len(self.element_planes)
+        return True
 
 
 def assign_delivery_number(element):
-    element.delivery_number = element.profiles[0].delivery_number
+    if element.profiles[0].delivery_number != '':
+        element.delivery_number = element.profiles[0].delivery_number
+    else:
+        element.delivery_number = element.guid
 
 
 def get_element_dimensions(element):
