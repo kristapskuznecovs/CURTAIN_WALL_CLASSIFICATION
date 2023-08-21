@@ -1,3 +1,6 @@
+import sys
+print(sys.executable)
+
 import os
 from .read_file import process_file
 from .errors import verification

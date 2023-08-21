@@ -4,7 +4,7 @@ import './ListDownload.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileArrowDown } from '@fortawesome/free-solid-svg-icons';
 
-const ListDownload = () => {
+const ListDownload = ({ sessionId }) => {
   const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
@@ -13,23 +13,27 @@ const ListDownload = () => {
 
   const fetchFileList = async () => {
     try {
-      const response = await axios.get('http://classification.upb.lv/api/download/filelist');
+      const response = await axios.get(process.env.REACT_APP_API_URL+'/api/download/filelist/'+JSON.stringify(sessionId));
       const data = response.data;
-      const fileListArray = data.file_list;
-      setFileList(fileListArray);
-      console.log('Updated fileList state:', fileListArray);
+      // Check if data has the expected structure
+      if (data.hasOwnProperty('file_list') && Array.isArray(data.file_list)) {
+        setFileList(data.file_list);
+      } else {
+        // Set a default empty list if the structure is not as expected
+        setFileList([]);
+      }
     } catch (error) {
-      console.error('Error fetching file list:', error);
     }
   };
+ 
 
   const handleRefresh = () => {
     fetchFileList();
   };
 
   const handleDownload = (filename) => {
-    // Replace 'default' with the appropriate folder name if needed
-    window.location.href = `http://classification.upb.lv/api/download/output/${filename}`;
+    const apiRoute = process.env.API_ROUTE;
+    window.location.href = `${apiRoute}/api/download/output/${filename}`;
   };
 
   return (

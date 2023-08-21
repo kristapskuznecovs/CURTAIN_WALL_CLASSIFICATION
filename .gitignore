@@ -16,3 +16,4 @@ cw_backend/data/node_input/
 .vscode/
 .idea/
 .venv/
+.env

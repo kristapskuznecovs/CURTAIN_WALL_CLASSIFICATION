@@ -1,77 +1,64 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import axios from 'axios';
-import PropTypes from 'prop-types';
 import './Buttons.css';
+import { sessionStore } from '../stores/storeSessions';
+import { observer } from 'mobx-react';
+import { alertStore } from '../stores/storeAlerts';
 
-const ButtonUpload = ({ selectedFiles }) => {
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
+
+const ButtonUpload = observer(({ selectedFiles }) => {
+  const sessionId = sessionStore.sessionId; // Get the sessionId value from sessionStore
 
   const handleUpload = useCallback(async (formData) => {
     try {
-      const response = await axios.post('http://classification.upb.lv/api/upload', formData, {
-        onUploadProgress: (progressEvent) => {
-          const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-          setUploadProgress(progress);
-        },
-      });
-
-      // Check the response status to determine if the upload was successful
+      const response = await axios.post(process.env.REACT_APP_API_URL+'/api/upload/'+JSON.stringify(sessionId), formData);
       if (response.status === 200) {
-        // Once the file is uploaded successfully, trigger the processing logic
-        await triggerProcessing(response.data.filename);
+        await startProcessing(response.data.filename);
       } else {
-        // Handle the case when the response status is not 200
-        console.error('File upload failed!');
+        //send an error to the user
+        alertStore.addAlert('File upload failed!');
       }
     } catch (error) {
       // Handle any errors that occurred during the API call
-      console.error('An error occurred while uploading the file.', error);
+      alertStore.addAlert('An error occurred while uploading the file.', error);
     }
-  }, []);
+  },[sessionId]);
 
-  const triggerProcessing = async (filename) => {
+  const startProcessing = async (filename) => {
     try {
-      // Call the API to trigger the file processing for the uploaded file
-      const response = await axios.get(`http://classification.upb.lv/api/process/${filename}`);
-      // You can handle the response here if needed
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/process/${filename}/${JSON.stringify(sessionId)}`);
       console.log('File processing response:', response.data);
     } catch (error) {
       // Handle any errors that occurred during the API call
-      console.error('An error occurred while triggering file processing.', error);
+      alertStore.addAlert('An error occurred while starting file processing.', error);
     }
   };
 
   const handleButtonClick = async () => {
+    console.log('handleButtonClick called');
     try {
       // Upload all selected files
       for (const file of selectedFiles) {
         const formData = new FormData();
         formData.append('file', file);
-
         // Perform the upload action using the handleUpload function
         await handleUpload(formData);
       }
     } catch (error) {
       // Handle errors
-      console.error('An error occurred during upload:', error);
+      alertStore.addAlert('An error occurred during upload:', error);
     }
   };
 
   return (
     <button
       type="button"
-      className={`button ${isUploading ? 'button-disabled' : ''}`} // Add the button-disabled class when isUploading is true
+      className="button"
       onClick={handleButtonClick}
-      disabled={isUploading} // Disable the button when isUploading is true
     >
-      {isUploading ? 'Apstrādā...' : 'Augšupielādēt'}
+      Augšupielādēt
     </button>
   );
-};
-
-ButtonUpload.propTypes = {
-  selectedFiles: PropTypes.array.isRequired,
-};
+});
 
 export default ButtonUpload;
