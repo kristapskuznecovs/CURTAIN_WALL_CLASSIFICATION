@@ -248,8 +248,8 @@ def get_option_descriptions(json_folder):
     return option_descriptions
 
 
-def generate_output_grouping(option_descriptions, types, output_folder):
-    output_grouping_file_path = os.path.join(output_folder, "output_grouping.csv")
+def generate_output_grouping(option_descriptions, types, output_folder, project_name):
+    output_grouping_file_path = os.path.join(output_folder, project_name + "_output_grouping.csv")
     with open(output_grouping_file_path, 'w', newline='', encoding='UTF8') as file:
         writer = csv.writer(file, delimiter=';')
 
@@ -385,7 +385,7 @@ def add_bad_elements(bad_elements, output_folder):
             writer.writerow([delivery_number, element.error])
 
 
-def analyze_jsons(output_folder, json_folder):
+def analyze_jsons(output_folder, json_folder, project_name):
     # Generate output openings csv report, information used for Engineers
     generate_output_openings(output_folder, json_folder)
 
@@ -394,7 +394,7 @@ def analyze_jsons(output_folder, json_folder):
     types = get_type_count(option_descriptions)
 
     # Generate output element grouping - information for factory
-    generate_output_grouping(option_descriptions, types, output_folder)
+    generate_output_grouping(option_descriptions, types, output_folder, project_name)
 
     generate_output_group_statistics(output_folder, types)
 

@@ -38,6 +38,8 @@ def process_files(filenames):
         print(f'Unhandled exception during sorting files:\n{e}')
         return False
 
+    project_name = files["project_name"]
+
     if not verification.check_files(files):
         return False
 
@@ -112,7 +114,7 @@ def process_files(filenames):
 
     if analyze_json:
         try:
-            analyze_jsons.analyze_jsons(output_folder, json_folder)
+            analyze_jsons.analyze_jsons(output_folder, json_folder, project_name)
         except Exception as e:
             print(f'Unhandled exception during json analysis:\n{e}')
             return False

@@ -3,6 +3,13 @@ import csv
 from .. import settings
 
 
+def get_project_name(profile_file_name):
+    if "_" in profile_file_name:
+        return profile_file_name[:profile_file_name.index("_")]
+    else:
+        return profile_file_name[:profile_file_name.index(".")]
+
+
 def sort_files(file_dict, directory):
     """
     Check file content, verify if all files correspond to necessary format
@@ -18,7 +25,8 @@ def sort_files(file_dict, directory):
 
     recognized_files = {"profile_file": None,
                         "opening_file": None,
-                        "unknown_files": []}
+                        "unknown_files": [],
+                        "project_name": None}
 
     for file_path in file_paths:
         with open(file_path, 'r', encoding='utf-8-sig') as csv_file:
@@ -31,6 +39,8 @@ def sort_files(file_dict, directory):
                               'GUID;ASSEMBLY.GUID;DELIVERY_NUMBER']:
                 if recognized_files["profile_file"] is None:
                     recognized_files["profile_file"] = file_path
+                    file_name = os.path.basename(file_path)
+                    recognized_files["project_name"] = get_project_name(file_name)
                 else:
                     recognized_files["unknown_files"].append(file_path)
 
@@ -44,5 +54,7 @@ def sort_files(file_dict, directory):
                 recognized_files["unknown_files"].append(file_path)
 
     settings.settings["assign_opening_type"] = recognized_files["opening_file"] is not None
+
+
 
     return recognized_files
